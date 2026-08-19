@@ -15,6 +15,13 @@ export async function PUT(request: NextRequest) {
   if (!user) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
 
   const body = await request.json();
-  const instellingen = await saveInstellingen(supabase, user.id, body);
-  return NextResponse.json(instellingen);
+  try {
+    const instellingen = await saveInstellingen(supabase, user.id, body);
+    return NextResponse.json(instellingen);
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Opslaan mislukt" },
+      { status: 500 }
+    );
+  }
 }
