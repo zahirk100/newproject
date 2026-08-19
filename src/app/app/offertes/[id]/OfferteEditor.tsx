@@ -10,6 +10,7 @@ import {
   RegelType,
 } from "@/lib/types";
 import { berekenTotalen, formatEuro, regelTotaal } from "@/lib/format";
+import AdresAutocomplete from "@/components/AdresAutocomplete";
 
 const STATUS_OPTIES: { waarde: OfferteStatus; label: string }[] = [
   { waarde: "concept", label: "Concept" },
@@ -243,9 +244,9 @@ export default function OfferteEditor({
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-black/50 print:hidden">
             Adres
           </label>
-          <input
+          <AdresAutocomplete
             value={offerte.klantadres}
-            onChange={(e) => updateVeld("klantadres", e.target.value)}
+            onChange={(waarde) => updateVeld("klantadres", waarde)}
             className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm print:border-none print:p-0 dark:border-white/20"
           />
         </div>

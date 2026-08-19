@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { Instellingen } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
+import AdresAutocomplete from "@/components/AdresAutocomplete";
 
 const VELDEN: { key: keyof Instellingen; label: string; type?: string }[] = [
   { key: "bedrijfsnaam", label: "Bedrijfsnaam" },
-  { key: "adres", label: "Adres" },
   { key: "kvkNummer", label: "KvK-nummer" },
   { key: "btwNummer", label: "BTW-nummer" },
   { key: "iban", label: "IBAN" },
@@ -137,6 +137,17 @@ export default function InstellingenForm({
         </div>
 
         <div className="space-y-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium" htmlFor="adres">
+              Adres
+            </label>
+            <AdresAutocomplete
+              id="adres"
+              value={instellingen.adres}
+              onChange={(waarde) => setInstellingen((huidig) => ({ ...huidig, adres: waarde }))}
+              className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
+            />
+          </div>
           {VELDEN.map((veld) => (
             <div key={veld.key}>
               <label className="mb-1 block text-sm font-medium" htmlFor={veld.key}>

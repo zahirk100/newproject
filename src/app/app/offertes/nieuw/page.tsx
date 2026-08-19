@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Klant } from "@/lib/types";
+import AdresAutocomplete from "@/components/AdresAutocomplete";
 
 export default function NieuweOffertePage() {
   const router = useRouter();
@@ -112,10 +113,10 @@ export default function NieuweOffertePage() {
             <label className="mb-1 block text-sm font-medium" htmlFor="klantadres">
               Adres
             </label>
-            <input
+            <AdresAutocomplete
               id="klantadres"
               value={klantadres}
-              onChange={(e) => setKlantadres(e.target.value)}
+              onChange={setKlantadres}
               className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
               placeholder="Straat, postcode, plaats"
             />
