@@ -176,7 +176,7 @@ export async function deleteKlant(
   if (error) throw new Error(`Verwijderen van klant mislukt: ${error.message}`);
 }
 
-function rowToOfferte(row: Row): Offerte {
+export function rowToOfferte(row: Row): Offerte {
   return {
     id: row.id as string,
     offerteNummer: row.offerte_nummer as string,
@@ -189,6 +189,11 @@ function rowToOfferte(row: Row): Offerte {
     btwPercentage: Number(row.btw_percentage ?? 21),
     status: (row.status as OfferteStatus) ?? "concept",
     opmerkingen: (row.opmerkingen as string) ?? "",
+    planningStatus: (row.planning_status as Offerte["planningStatus"]) ?? null,
+    planningDatum: (row.planning_datum as string | null) ?? null,
+    planningNotitie: (row.planning_notitie as string) ?? "",
+    planningVoorgesteldDoor:
+      (row.planning_voorgesteld_door as Offerte["planningVoorgesteldDoor"]) ?? null,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   };
@@ -281,6 +286,11 @@ export async function updateOfferte(
   if (patch.btwPercentage !== undefined) row.btw_percentage = patch.btwPercentage;
   if (patch.status !== undefined) row.status = patch.status;
   if (patch.opmerkingen !== undefined) row.opmerkingen = patch.opmerkingen;
+  if (patch.planningStatus !== undefined) row.planning_status = patch.planningStatus;
+  if (patch.planningDatum !== undefined) row.planning_datum = patch.planningDatum;
+  if (patch.planningNotitie !== undefined) row.planning_notitie = patch.planningNotitie;
+  if (patch.planningVoorgesteldDoor !== undefined)
+    row.planning_voorgesteld_door = patch.planningVoorgesteldDoor;
 
   const { data, error } = await supabase
     .from("offertes")

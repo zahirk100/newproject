@@ -16,6 +16,9 @@ export type OfferteStatus =
   | "geaccepteerd"
   | "afgewezen";
 
+export type PlanningStatus = "voorgesteld" | "tegenvoorstel" | "bevestigd" | "afgerond";
+export type PlanningVoorgesteldDoor = "ondernemer" | "klant";
+
 export interface Offerte {
   id: string;
   offerteNummer: string;
@@ -28,6 +31,10 @@ export interface Offerte {
   btwPercentage: number;
   status: OfferteStatus;
   opmerkingen: string;
+  planningStatus: PlanningStatus | null;
+  planningDatum: string | null;
+  planningNotitie: string;
+  planningVoorgesteldDoor: PlanningVoorgesteldDoor | null;
   createdAt: string;
   updatedAt: string;
 }

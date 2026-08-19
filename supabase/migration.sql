@@ -93,6 +93,10 @@ create table if not exists public.offertes (
   status text not null default 'concept'
     check (status in ('aanvraag', 'concept', 'verzonden', 'geaccepteerd', 'afgewezen')),
   opmerkingen text not null default '',
+  planning_status text,
+  planning_datum timestamptz,
+  planning_notitie text not null default '',
+  planning_voorgesteld_door text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -100,11 +104,25 @@ create table if not exists public.offertes (
 -- Idempotent: voegt klant_email toe als de tabel al bestond van een eerdere run
 alter table public.offertes add column if not exists klant_email text not null default '';
 
+-- Idempotent: voegt planning-velden toe als de tabel al bestond
+alter table public.offertes add column if not exists planning_status text;
+alter table public.offertes add column if not exists planning_datum timestamptz;
+alter table public.offertes add column if not exists planning_notitie text not null default '';
+alter table public.offertes add column if not exists planning_voorgesteld_door text;
+
 -- Idempotent: staat 'aanvraag' als status toe als de tabel (en constraint)
 -- al bestond van een eerdere run zonder deze waarde
 alter table public.offertes drop constraint if exists offertes_status_check;
 alter table public.offertes add constraint offertes_status_check
   check (status in ('aanvraag', 'concept', 'verzonden', 'geaccepteerd', 'afgewezen'));
+
+alter table public.offertes drop constraint if exists offertes_planning_status_check;
+alter table public.offertes add constraint offertes_planning_status_check
+  check (planning_status is null or planning_status in ('voorgesteld', 'tegenvoorstel', 'bevestigd', 'afgerond'));
+
+alter table public.offertes drop constraint if exists offertes_planning_voorgesteld_door_check;
+alter table public.offertes add constraint offertes_planning_voorgesteld_door_check
+  check (planning_voorgesteld_door is null or planning_voorgesteld_door in ('ondernemer', 'klant'));
 
 alter table public.offertes enable row level security;
 

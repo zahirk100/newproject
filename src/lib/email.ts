@@ -110,6 +110,64 @@ export async function verstuurAanvraagBevestiging(
   });
 }
 
+function formatteerDatumTijd(iso: string) {
+  return new Date(iso).toLocaleString("nl-NL", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+export async function verstuurPlanningVoorstelEmail(
+  offerte: Offerte,
+  instellingen: Instellingen,
+  portaalUrl: string
+) {
+  if (!process.env.RESEND_API_KEY || !offerte.klantEmail?.trim() || !offerte.planningDatum) return;
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  await resend.emails.send({
+    from: afzender(),
+    to: [offerte.klantEmail],
+    replyTo: instellingen.email || undefined,
+    subject: `Voorstel voor je afspraak — ${instellingen.bedrijfsnaam}`,
+    html: `
+      <p>Beste ${offerte.klantnaam || "klant"},</p>
+      <p><strong>${instellingen.bedrijfsnaam}</strong> stelt voor om de klus in te plannen op:</p>
+      <p style="font-size:16px"><strong>${formatteerDatumTijd(offerte.planningDatum)}</strong></p>
+      ${offerte.planningNotitie ? `<p>${offerte.planningNotitie}</p>` : ""}
+      <p style="margin:24px 0">
+        <a href="${portaalUrl}" style="background:#111827;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;display:inline-block">
+          Bekijk voorstel
+        </a>
+      </p>
+      <p>Komt dit niet uit? Op die pagina kun je ook een ander moment voorstellen.</p>
+      <p>Met vriendelijke groet,<br/>${instellingen.bedrijfsnaam}</p>
+    `,
+  });
+}
+
+export async function verstuurPlanningBevestigdEmail(offerte: Offerte, instellingen: Instellingen) {
+  if (!process.env.RESEND_API_KEY || !offerte.klantEmail?.trim() || !offerte.planningDatum) return;
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  await resend.emails.send({
+    from: afzender(),
+    to: [offerte.klantEmail],
+    replyTo: instellingen.email || undefined,
+    subject: `Afspraak bevestigd — ${instellingen.bedrijfsnaam}`,
+    html: `
+      <p>Beste ${offerte.klantnaam || "klant"},</p>
+      <p>De afspraak is bevestigd op:</p>
+      <p style="font-size:16px"><strong>${formatteerDatumTijd(offerte.planningDatum)}</strong></p>
+      <p>Tot dan!</p>
+      <p>Met vriendelijke groet,<br/>${instellingen.bedrijfsnaam}</p>
+    `,
+  });
+}
+
 export async function verstuurEigenaarNotificatie(
   instellingen: Instellingen,
   onderwerp: string,
