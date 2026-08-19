@@ -221,6 +221,7 @@ export async function createOfferte(
     klusOmschrijving: string;
     regels: OfferteRegel[];
     btwPercentage: number;
+    status?: OfferteStatus;
   }
 ): Promise<Offerte> {
   const { data, error } = await supabase
@@ -235,6 +236,7 @@ export async function createOfferte(
       klus_omschrijving: offerte.klusOmschrijving,
       regels: offerte.regels,
       btw_percentage: offerte.btwPercentage,
+      ...(offerte.status ? { status: offerte.status } : {}),
     })
     .select()
     .single();

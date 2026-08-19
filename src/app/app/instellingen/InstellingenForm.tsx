@@ -27,11 +27,19 @@ export default function InstellingenForm({
   const [logoUploaden, setLogoUploaden] = useState(false);
   const [logoFout, setLogoFout] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [linkGekopieerd, setLinkGekopieerd] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
   }, []);
+
+  async function kopieerAanvraagLink() {
+    if (!userId) return;
+    await navigator.clipboard.writeText(`${window.location.origin}/aanvraag/${userId}`);
+    setLinkGekopieerd(true);
+    setTimeout(() => setLinkGekopieerd(false), 2000);
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -82,6 +90,22 @@ export default function InstellingenForm({
         Deze gegevens verschijnen op je offertes en worden gebruikt als
         standaardwaarden bij het genereren van nieuwe offertes.
       </p>
+
+      <div className="mb-8 rounded-lg border border-black/10 p-5 dark:border-white/10">
+        <h2 className="mb-1 text-sm font-semibold">Offertes aanvragen</h2>
+        <p className="mb-3 text-sm text-black/60 dark:text-white/60">
+          Deel deze link (bijv. op je website of WhatsApp) zodat klanten zelf een offerte kunnen
+          aanvragen. Aanvragen komen binnen in je dashboard.
+        </p>
+        <button
+          type="button"
+          onClick={kopieerAanvraagLink}
+          disabled={!userId}
+          className="rounded-md border border-black/15 px-3 py-1.5 text-sm font-medium hover:bg-black/5 disabled:opacity-50 dark:border-white/20 dark:hover:bg-white/10"
+        >
+          {linkGekopieerd ? "Gekopieerd ✓" : "Kopieer aanvraaglink"}
+        </button>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="rounded-lg border border-black/10 p-5 dark:border-white/10">

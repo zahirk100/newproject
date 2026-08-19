@@ -81,7 +81,7 @@ create table if not exists public.offertes (
   regels jsonb not null default '[]'::jsonb,
   btw_percentage numeric not null default 21,
   status text not null default 'concept'
-    check (status in ('concept', 'verzonden', 'geaccepteerd', 'afgewezen')),
+    check (status in ('aanvraag', 'concept', 'verzonden', 'geaccepteerd', 'afgewezen')),
   opmerkingen text not null default '',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -89,6 +89,12 @@ create table if not exists public.offertes (
 
 -- Idempotent: voegt klant_email toe als de tabel al bestond van een eerdere run
 alter table public.offertes add column if not exists klant_email text not null default '';
+
+-- Idempotent: staat 'aanvraag' als status toe als de tabel (en constraint)
+-- al bestond van een eerdere run zonder deze waarde
+alter table public.offertes drop constraint if exists offertes_status_check;
+alter table public.offertes add constraint offertes_status_check
+  check (status in ('aanvraag', 'concept', 'verzonden', 'geaccepteerd', 'afgewezen'));
 
 alter table public.offertes enable row level security;
 
