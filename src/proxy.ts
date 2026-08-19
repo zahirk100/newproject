@@ -6,6 +6,7 @@ const PUBLIEKE_PADEN = ["/", "/login", "/registreren"];
 function isPubliekPad(pathname: string) {
   if (PUBLIEKE_PADEN.includes(pathname)) return true;
   if (pathname.startsWith("/_next") || pathname.startsWith("/favicon")) return true;
+  if (pathname.startsWith("/auth/")) return true;
   return false;
 }
 

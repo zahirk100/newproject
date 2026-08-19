@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthedContext } from "@/lib/apiAuth";
-import { createOfferte, getInstellingen, listOffertes, nextOfferteNummer } from "@/lib/db";
+import { createKlant, createOfferte, getInstellingen, listOffertes, nextOfferteNummer } from "@/lib/db";
 import { genereerOfferteRegels } from "@/lib/ai";
 
 export async function GET() {
@@ -32,9 +32,22 @@ export async function POST(request: NextRequest) {
   const regels = await genereerOfferteRegels(klusOmschrijving, instellingen);
   const offerteNummer = await nextOfferteNummer(supabase, user.id);
 
+  // Bij een nieuwe (nog niet bestaande) klant meteen een klantenrecord
+  // aanmaken, zodat de klant ook terugkomt in het klantenoverzicht.
+  let uiteindelijkeKlantId = klantId ?? null;
+  if (!uiteindelijkeKlantId && klantnaam?.trim()) {
+    const nieuweKlant = await createKlant(supabase, user.id, {
+      naam: klantnaam.trim(),
+      adres: klantadres?.trim() || "",
+      email: klantEmail?.trim() || "",
+      telefoon: "",
+    });
+    uiteindelijkeKlantId = nieuweKlant.id;
+  }
+
   const offerte = await createOfferte(supabase, user.id, {
     offerteNummer,
-    klantId: klantId ?? null,
+    klantId: uiteindelijkeKlantId,
     klantnaam: klantnaam?.trim() || "",
     klantadres: klantadres?.trim() || "",
     klantEmail: klantEmail?.trim() || "",

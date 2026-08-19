@@ -22,7 +22,10 @@ export default function RegistrerenPage() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password: wachtwoord,
-      options: { data: { bedrijfsnaam } },
+      options: {
+        data: { bedrijfsnaam },
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
     if (error) {
       setFout(error.message);
