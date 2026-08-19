@@ -141,7 +141,7 @@ export default function OfferteEditor({
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10 print:max-w-none print:px-0 print:py-0">
-      <div className="mb-6 flex items-center justify-between print:hidden">
+      <div className="mb-6 flex flex-col gap-4 print:hidden sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{offerte.offerteNummer}</h1>
           <p className="text-sm text-black/60 dark:text-white/60">
@@ -154,7 +154,7 @@ export default function OfferteEditor({
             {linkGekopieerd ? "Klantlink gekopieerd ✓" : "Kopieer klantlink"}
           </button>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <select
             value={offerte.status}
             onChange={(e) =>

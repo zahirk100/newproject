@@ -110,7 +110,7 @@ export default function InstellingenForm({
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="rounded-lg border border-black/10 p-5 dark:border-white/10">
           <h2 className="mb-4 text-sm font-semibold">Huisstijl</h2>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-6">
             <div>
               <div className="mb-1 text-xs font-medium uppercase tracking-wide text-black/50">
                 Logo

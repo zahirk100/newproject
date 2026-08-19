@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createKlant, createOfferte, getInstellingen, nextOfferteNummer } from "@/lib/db";
-import { verstuurEigenaarNotificatie } from "@/lib/email";
+import { verstuurAanvraagBevestiging, verstuurEigenaarNotificatie } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -47,11 +47,14 @@ export async function POST(request: NextRequest) {
     status: "aanvraag",
   });
 
-  await verstuurEigenaarNotificatie(
-    instellingen,
-    `Nieuwe offerte-aanvraag van ${naam.trim()}`,
-    `${naam.trim()} heeft een offerte aangevraagd: "${klusOmschrijving.trim()}". Bekijk 'm in je dashboard onder Aanvragen.`
-  ).catch(() => {});
+  await Promise.all([
+    verstuurEigenaarNotificatie(
+      instellingen,
+      `Nieuwe offerte-aanvraag van ${naam.trim()}`,
+      `${naam.trim()} heeft een offerte aangevraagd: "${klusOmschrijving.trim()}". Bekijk 'm in je dashboard onder Aanvragen.`
+    ).catch(() => {}),
+    verstuurAanvraagBevestiging(email.trim(), naam.trim(), instellingen).catch(() => {}),
+  ]);
 
   return NextResponse.json({ id: offerte.id }, { status: 201 });
 }

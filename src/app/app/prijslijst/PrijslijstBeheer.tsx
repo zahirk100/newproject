@@ -94,7 +94,7 @@ export default function PrijslijstBeheer({
       ) : (
         <ul className="divide-y divide-black/10 rounded-lg border border-black/10 dark:divide-white/10 dark:border-white/10">
           {items.map((item) => (
-            <li key={item.id} className="flex items-center justify-between gap-4 px-5 py-4">
+            <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
               <div>
                 <div className="font-medium">{item.naam}</div>
                 <div className="text-sm text-black/60 dark:text-white/60">
