@@ -33,7 +33,10 @@ export default function NumberInput({
       onChange(0);
       return;
     }
-    const parsed = Number(nieuweTekst);
+    // Nederlandse toetsenborden typen een komma als decimaalteken (bijv.
+    // "0,50"), maar Number() begrijpt alleen een punt — zonder deze
+    // omzetting levert dat NaN op en wordt de invoer stilletjes genegeerd.
+    const parsed = Number(nieuweTekst.replace(",", "."));
     if (!Number.isNaN(parsed)) {
       onChange(parsed);
     }
