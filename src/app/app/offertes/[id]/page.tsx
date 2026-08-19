@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
-import { getInstellingen, getOfferte } from "@/lib/store";
+import { createClient } from "@/lib/supabase/server";
+import { getInstellingen, getOfferte } from "@/lib/db";
 import OfferteEditor from "./OfferteEditor";
+
+export const dynamic = "force-dynamic";
 
 export default async function OffertePage({
   params,
@@ -8,9 +11,16 @@ export default async function OffertePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) notFound();
+
   const [offerte, instellingen] = await Promise.all([
-    getOfferte(id),
-    getInstellingen(),
+    getOfferte(supabase, user.id, id),
+    getInstellingen(supabase, user.id),
   ]);
 
   if (!offerte) {

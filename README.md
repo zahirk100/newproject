@@ -1,21 +1,68 @@
 # OfferteFlits
 
-AI-offertetool voor vakmensen (loodgieters, elektriciens, aannemers, schilders,
-etc.). Beschrijf een klus in gewone taal en krijg binnen een minuut een
-offerteconcept met materiaal- en arbeidsregels, dat je direct kunt bewerken en
-als PDF kunt exporteren.
+Multi-tenant SaaS-offertetool voor vakmensen (loodgieters, elektriciens,
+aannemers, schilders, etc.). Elk bedrijf logt apart in en beheert zijn eigen
+offertes, klanten en instellingen. Beschrijf een klus in gewone taal en krijg
+binnen een minuut een offerteconcept met materiaal- en arbeidsregels, dat je
+direct kunt bewerken, als PDF kunt downloaden en per e-mail naar de klant kunt
+sturen.
 
-## Hoe het werkt
+## Functionaliteit
 
-1. **Instellingen** — vul bedrijfsgegevens en je standaard uurtarief/btw in.
-2. **Nieuwe offerte** — beschrijf de klus, vul klantgegevens in.
-3. De AI (Claude) genereert offerteregels op basis van de omschrijving en het
-   standaard uurtarief.
-4. Bewerk de regels, aantallen en prijzen naar wens op de offertepagina.
-5. Sla op en gebruik **Print / Exporteer PDF** (browser-afdrukfunctie) om een
-   PDF voor de klant te maken.
+- **Registratie/login** per bedrijf (Supabase Auth), elk account ziet alleen
+  zijn eigen data (Row Level Security)
+- **AI-offertes**: klus omschrijven → Claude genereert materiaal- en
+  arbeidsregels, direct bewerkbaar
+- **Klantenbeheer**: klanten opslaan en hergebruiken bij nieuwe offertes
+- **Dashboard**: omzet uit geaccepteerde offertes, conversieratio, offertes
+  deze maand
+- **Huisstijl**: logo uploaden en merkkleur instellen, gebruikt op offertes/PDF
+- **PDF + e-mail**: offerte als PDF downloaden of direct per e-mail (met
+  PDF-bijlage) naar de klant versturen
 
-## Ontwikkelen
+## Stack
+
+- Next.js (App Router) + TypeScript + Tailwind CSS
+- **Supabase**: Postgres-database met Row Level Security, Auth, Storage
+  (logo's)
+- **Anthropic Claude API** (`@anthropic-ai/sdk`) met Zod-gevalideerde
+  structured output voor offerteregels
+- **Resend** voor transactionele e-mail
+- **@react-pdf/renderer** voor server-side PDF-generatie
+
+## Setup
+
+### 1. Database (Supabase)
+
+Draai het volledige script in `supabase/migration.sql` één keer in je
+Supabase-project via **Dashboard → SQL Editor → New query → Run**. Dit maakt
+de tabellen (`profiles`, `klanten`, `offertes`), Row Level Security-policies,
+de auto-profiel-trigger bij registratie, en de `logos`-storage-bucket aan.
+
+> Zonder deze migratie werkt de app niet — elke database-call faalt totdat de
+> tabellen bestaan.
+
+### 2. Omgevingsvariabelen
+
+```bash
+cp .env.example .env.local
+```
+
+Vul in:
+
+| Variabele | Waar te vinden |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Settings → API |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Settings → API (publishable/anon key) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API (secret, alleen server-side) |
+| `RESEND_API_KEY` | resend.com → API Keys |
+| `RESEND_FROM_EMAIL` | optioneel; standaard `OfferteFlits <onboarding@resend.dev>` — voor productie een geverifieerd eigen domein in Resend gebruiken |
+| `ANTHROPIC_API_KEY` | optioneel; zonder key valt AI-generatie terug op een eenvoudig basisvoorstel |
+
+Zet dezelfde variabelen ook in **Vercel → Project → Settings → Environment
+Variables** voor de live deployment.
+
+### 3. Ontwikkelen
 
 ```bash
 npm install
@@ -24,28 +71,20 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-### AI-configuratie
+## Belangrijk: e-mailbevestiging bij registratie
 
-Zet een `ANTHROPIC_API_KEY` omgevingsvariabele om echte AI-gegenereerde
-offertes te krijgen. Zonder API-key valt de app terug op een eenvoudig
-basisvoorstel (1 arbeidsregel + 1 materiaalregel), zodat de rest van de app
-ook zonder key te testen is.
+Supabase heeft standaard "Confirm email" aan staan — na registreren moet de
+gebruiker eerst op een link in zijn mail klikken voor hij kan inloggen. Wil je
+dat uitschakelen voor snellere tests: **Supabase → Authentication →
+Providers → Email → "Confirm email" uitzetten**.
 
-```bash
-cp .env.example .env.local   # en vul ANTHROPIC_API_KEY in
-```
+## Belangrijk: e-mail versturen (Resend)
 
-### Databeheer
-
-Offertes en instellingen worden lokaal opgeslagen als JSON-bestanden in
-`data/` (genegeerd door git). Voor productie/meerdere gebruikers vervang je
-`src/lib/store.ts` door een echte database.
-
-## Stack
-
-- Next.js (App Router) + TypeScript + Tailwind CSS
-- Anthropic Claude API (`@anthropic-ai/sdk`) met Zod-gevalideerde
-  structured output voor offerteregels
+Zonder een geverifieerd eigen domein in Resend kan de standaard
+`onboarding@resend.dev`-afzender alleen mailen naar het e-mailadres waarmee
+je Resend-account is aangemaakt. Voor e-mails naar willekeurige klanten:
+verifieer een eigen domein in Resend en zet `RESEND_FROM_EMAIL` op een adres
+binnen dat domein.
 
 ## Productie build
 

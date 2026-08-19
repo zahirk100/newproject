@@ -1,0 +1,174 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Instellingen } from "@/lib/types";
+import { createClient } from "@/lib/supabase/client";
+
+const VELDEN: { key: keyof Instellingen; label: string; type?: string }[] = [
+  { key: "bedrijfsnaam", label: "Bedrijfsnaam" },
+  { key: "adres", label: "Adres" },
+  { key: "kvkNummer", label: "KvK-nummer" },
+  { key: "btwNummer", label: "BTW-nummer" },
+  { key: "iban", label: "IBAN" },
+  { key: "email", label: "E-mailadres" },
+  { key: "telefoon", label: "Telefoonnummer" },
+  { key: "standaardUurtarief", label: "Standaard uurtarief (€)", type: "number" },
+  { key: "standaardBtwPercentage", label: "Standaard BTW-percentage", type: "number" },
+];
+
+export default function InstellingenForm({
+  initialInstellingen,
+}: {
+  initialInstellingen: Instellingen;
+}) {
+  const [instellingen, setInstellingen] = useState(initialInstellingen);
+  const [opslaan, setOpslaan] = useState(false);
+  const [opgeslagen, setOpgeslagen] = useState(false);
+  const [logoUploaden, setLogoUploaden] = useState(false);
+  const [logoFout, setLogoFout] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+  }, []);
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setOpslaan(true);
+    setOpgeslagen(false);
+    try {
+      const response = await fetch("/api/instellingen", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(instellingen),
+      });
+      const bijgewerkt = await response.json();
+      setInstellingen(bijgewerkt);
+      setOpgeslagen(true);
+    } finally {
+      setOpslaan(false);
+    }
+  }
+
+  async function logoUploaden_(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file || !userId) return;
+    setLogoFout(null);
+    setLogoUploaden(true);
+    try {
+      const supabase = createClient();
+      const extensie = file.name.split(".").pop() || "png";
+      const pad = `${userId}/logo-${Date.now()}.${extensie}`;
+      const { error: uploadError } = await supabase.storage
+        .from("logos")
+        .upload(pad, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage.from("logos").getPublicUrl(pad);
+      setInstellingen((huidig) => ({ ...huidig, logoUrl: publicUrlData.publicUrl }));
+      setOpgeslagen(false);
+    } catch (error) {
+      setLogoFout(error instanceof Error ? error.message : "Uploaden mislukt");
+    } finally {
+      setLogoUploaden(false);
+    }
+  }
+
+  return (
+    <div className="mx-auto max-w-2xl px-8 py-10">
+      <h1 className="mb-2 text-2xl font-semibold">Instellingen</h1>
+      <p className="mb-8 text-sm text-black/60 dark:text-white/60">
+        Deze gegevens verschijnen op je offertes en worden gebruikt als
+        standaardwaarden bij het genereren van nieuwe offertes.
+      </p>
+
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="rounded-lg border border-black/10 p-5 dark:border-white/10">
+          <h2 className="mb-4 text-sm font-semibold">Huisstijl</h2>
+          <div className="flex items-center gap-6">
+            <div>
+              <div className="mb-1 text-xs font-medium uppercase tracking-wide text-black/50">
+                Logo
+              </div>
+              <div className="flex items-center gap-3">
+                {instellingen.logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={instellingen.logoUrl}
+                    alt="Logo"
+                    className="h-12 w-12 rounded object-contain"
+                  />
+                ) : (
+                  <div
+                    className="flex h-12 w-12 items-center justify-center rounded text-white"
+                    style={{ backgroundColor: instellingen.merkkleur }}
+                  >
+                    {instellingen.bedrijfsnaam.charAt(0).toUpperCase() || "O"}
+                  </div>
+                )}
+                <label className="cursor-pointer rounded-md border border-black/15 px-3 py-1.5 text-sm font-medium hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10">
+                  {logoUploaden ? "Uploaden…" : "Logo uploaden"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={logoUploaden_}
+                    disabled={logoUploaden || !userId}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+              {logoFout && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{logoFout}</p>}
+            </div>
+            <div>
+              <div className="mb-1 text-xs font-medium uppercase tracking-wide text-black/50">
+                Merkkleur
+              </div>
+              <input
+                type="color"
+                value={instellingen.merkkleur}
+                onChange={(e) =>
+                  setInstellingen((huidig) => ({ ...huidig, merkkleur: e.target.value }))
+                }
+                className="h-9 w-16 cursor-pointer rounded border border-black/15 bg-transparent dark:border-white/20"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          {VELDEN.map((veld) => (
+            <div key={veld.key}>
+              <label className="mb-1 block text-sm font-medium" htmlFor={veld.key}>
+                {veld.label}
+              </label>
+              <input
+                id={veld.key}
+                type={veld.type ?? "text"}
+                value={instellingen[veld.key] as string | number}
+                onChange={(e) =>
+                  setInstellingen((huidig) => ({
+                    ...huidig,
+                    [veld.key]:
+                      veld.type === "number"
+                        ? parseFloat(e.target.value) || 0
+                        : e.target.value,
+                  }))
+                }
+                className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
+              />
+            </div>
+          ))}
+        </div>
+
+        <button
+          type="submit"
+          disabled={opslaan}
+          className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-white/80"
+        >
+          {opslaan ? "Opslaan…" : opgeslagen ? "Opgeslagen ✓" : "Opslaan"}
+        </button>
+      </form>
+    </div>
+  );
+}
