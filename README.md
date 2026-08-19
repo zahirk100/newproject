@@ -19,6 +19,12 @@ sturen.
 - **Huisstijl**: logo uploaden en merkkleur instellen, gebruikt op offertes/PDF
 - **PDF + e-mail**: offerte als PDF downloaden of direct per e-mail (met
   PDF-bijlage) naar de klant versturen
+- **Klantportaal**: de klant krijgt een link naar een publieke pagina waar hij
+  de offerte kan **goedkeuren of afwijzen** — geen account nodig. De status
+  update meteen in het dashboard van de ondernemer.
+- **Automatische facturatie**: zodra een klant goedkeurt, wordt er automatisch
+  een factuur gegenereerd en gemaild; de ondernemer beheert openstaande/
+  betaalde facturen op de facturenpagina
 
 ## Stack
 

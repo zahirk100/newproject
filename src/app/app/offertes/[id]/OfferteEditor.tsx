@@ -44,6 +44,7 @@ export default function OfferteEditor({
   const [versturen, setVersturen] = useState(false);
   const [verstuurFout, setVerstuurFout] = useState<string | null>(null);
   const [verstuurd, setVerstuurd] = useState(false);
+  const [linkGekopieerd, setLinkGekopieerd] = useState(false);
 
   const { subtotaal, btwBedrag, totaal } = berekenTotalen(
     offerte.regels,
@@ -128,6 +129,13 @@ export default function OfferteEditor({
     }
   }
 
+  async function kopieerKlantLink() {
+    const url = `${window.location.origin}/offerte/${offerte.id}`;
+    await navigator.clipboard.writeText(url);
+    setLinkGekopieerd(true);
+    setTimeout(() => setLinkGekopieerd(false), 2000);
+  }
+
   return (
     <div className="mx-auto max-w-3xl px-6 py-10 print:max-w-none print:px-0 print:py-0">
       <div className="mb-6 flex items-center justify-between print:hidden">
@@ -136,6 +144,12 @@ export default function OfferteEditor({
           <p className="text-sm text-black/60 dark:text-white/60">
             Aangemaakt {new Date(offerte.createdAt).toLocaleDateString("nl-NL")}
           </p>
+          <button
+            onClick={kopieerKlantLink}
+            className="mt-1 text-xs font-medium text-black/50 underline hover:text-black dark:text-white/50 dark:hover:text-white"
+          >
+            {linkGekopieerd ? "Klantlink gekopieerd ✓" : "Kopieer klantlink"}
+          </button>
         </div>
         <div className="flex items-center gap-3">
           <select

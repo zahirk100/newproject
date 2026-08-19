@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { Instellingen, Klant, Offerte, OfferteRegel, OfferteStatus } from "./types";
+import { Factuur, FactuurStatus, Instellingen, Klant, Offerte, OfferteRegel, OfferteStatus } from "./types";
 
 type Row = Record<string, unknown>;
 
@@ -281,4 +281,90 @@ export async function deleteOfferte(
     .eq("profile_id", userId)
     .eq("id", id);
   if (error) throw new Error(`Verwijderen van offerte mislukt: ${error.message}`);
+}
+
+function rowToFactuur(row: Row): Factuur {
+  return {
+    id: row.id as string,
+    offerteId: (row.offerte_id as string | null) ?? null,
+    factuurNummer: row.factuur_nummer as string,
+    klantnaam: (row.klant_naam as string) ?? "",
+    klantadres: (row.klant_adres as string) ?? "",
+    klantEmail: (row.klant_email as string) ?? "",
+    regels: (row.regels as OfferteRegel[]) ?? [],
+    btwPercentage: Number(row.btw_percentage ?? 21),
+    status: (row.status as FactuurStatus) ?? "open",
+    factuurdatum: row.factuurdatum as string,
+    vervaldatum: row.vervaldatum as string,
+    createdAt: row.created_at as string,
+  };
+}
+
+export async function listFacturen(supabase: SupabaseClient, userId: string): Promise<Factuur[]> {
+  const { data, error } = await supabase
+    .from("facturen")
+    .select("*")
+    .eq("profile_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(`Kon facturen niet laden: ${error.message}`);
+  return (data ?? []).map(rowToFactuur);
+}
+
+export async function nextFactuurNummer(supabase: SupabaseClient, userId: string): Promise<string> {
+  const year = new Date().getFullYear();
+  const { count, error } = await supabase
+    .from("facturen")
+    .select("id", { count: "exact", head: true })
+    .eq("profile_id", userId)
+    .like("factuur_nummer", `FA-${year}-%`);
+  if (error) throw new Error(`Kon volgend factuurnummer niet bepalen: ${error.message}`);
+  return `FA-${year}-${String((count ?? 0) + 1).padStart(3, "0")}`;
+}
+
+export async function createFactuur(
+  supabase: SupabaseClient,
+  userId: string,
+  factuur: {
+    offerteId: string | null;
+    factuurNummer: string;
+    klantnaam: string;
+    klantadres: string;
+    klantEmail: string;
+    regels: OfferteRegel[];
+    btwPercentage: number;
+  }
+): Promise<Factuur> {
+  const { data, error } = await supabase
+    .from("facturen")
+    .insert({
+      profile_id: userId,
+      offerte_id: factuur.offerteId,
+      factuur_nummer: factuur.factuurNummer,
+      klant_naam: factuur.klantnaam,
+      klant_adres: factuur.klantadres,
+      klant_email: factuur.klantEmail,
+      regels: factuur.regels,
+      btw_percentage: factuur.btwPercentage,
+    })
+    .select()
+    .single();
+  if (error || !data) throw new Error(`Aanmaken van factuur mislukt: ${error?.message}`);
+  return rowToFactuur(data);
+}
+
+export async function updateFactuurStatus(
+  supabase: SupabaseClient,
+  userId: string,
+  id: string,
+  status: FactuurStatus
+): Promise<Factuur> {
+  const { data, error } = await supabase
+    .from("facturen")
+    .update({ status })
+    .eq("profile_id", userId)
+    .eq("id", id)
+    .select()
+    .single();
+  if (error || !data) throw new Error(`Bijwerken van factuur mislukt: ${error?.message}`);
+  return rowToFactuur(data);
 }
