@@ -48,11 +48,31 @@ export default function OfferteEditor({
   const [verstuurFout, setVerstuurFout] = useState<string | null>(null);
   const [verstuurd, setVerstuurd] = useState(false);
   const [linkGekopieerd, setLinkGekopieerd] = useState(false);
+  const [voorrijkostenReden, setVoorrijkostenReden] = useState<string | null>(null);
+  const [voorrijkostenControleren, setVoorrijkostenControleren] = useState(false);
 
   const { subtotaal, btwBedrag, totaal } = berekenTotalen(
     offerte.regels,
     offerte.btwPercentage
   );
+
+  const voorrijkostenOntbreken =
+    (instellingen.voorrijkostenPerKm ?? 0) > 0 &&
+    !offerte.regels.some((regel) => regel.omschrijving.startsWith("Voorrijkosten"));
+
+  async function controleerVoorrijkosten() {
+    setVoorrijkostenControleren(true);
+    setVoorrijkostenReden(null);
+    try {
+      const response = await fetch(`/api/offertes/${offerte.id}/voorrijkosten-diagnose`);
+      const data = await response.json();
+      setVoorrijkostenReden(data.reden || "Onbekende reden.");
+    } catch {
+      setVoorrijkostenReden("Controleren is mislukt. Probeer het later opnieuw.");
+    } finally {
+      setVoorrijkostenControleren(false);
+    }
+  }
 
   function updateVeld<K extends keyof Offerte>(veld: K, waarde: Offerte[K]) {
     setOfferte((huidig) => ({ ...huidig, [veld]: waarde }));
@@ -278,6 +298,25 @@ export default function OfferteEditor({
           {offerte.klusOmschrijving}
         </p>
       </div>
+
+      {voorrijkostenOntbreken && (
+        <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 print:hidden dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+          <p>
+            Voorrijkosten zijn ingesteld, maar staan niet in deze offerte.
+          </p>
+          {voorrijkostenReden ? (
+            <p className="mt-1">{voorrijkostenReden}</p>
+          ) : (
+            <button
+              onClick={controleerVoorrijkosten}
+              disabled={voorrijkostenControleren}
+              className="mt-1 font-medium underline hover:no-underline disabled:opacity-50"
+            >
+              {voorrijkostenControleren ? "Controleren…" : "Controleer waarom"}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Regels */}
       <div className="mb-2 overflow-x-auto print:overflow-visible">

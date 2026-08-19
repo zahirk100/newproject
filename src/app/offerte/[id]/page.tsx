@@ -112,6 +112,8 @@ export default async function PubliekeOffertePagina({
             planningStatus={offerte.planningStatus}
             planningDatum={offerte.planningDatum}
             planningNotitie={offerte.planningNotitie}
+            klusOmschrijving={offerte.klusOmschrijving}
+            klantadres={offerte.klantadres}
           />
         )}
       </div>

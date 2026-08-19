@@ -45,36 +45,91 @@ export function afstandInKm(a: Coordinaat, b: Coordinaat): number {
   return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
 }
 
+interface VoorrijkostenResultaat {
+  regel: OfferteRegel | null;
+  /** Reden waarom er geen regel is toegevoegd; null als het is gelukt. */
+  reden: string | null;
+}
+
 /**
  * Berekent een voorrijkosten-offerteregel op basis van de hemelsbrede
  * afstand tussen bedrijfsadres en klantadres, als de ondernemer daarvoor
- * een tarief heeft ingesteld. Geeft null terug als voorrijkosten niet zijn
- * ingesteld, een adres ontbreekt/niet gevonden wordt, of de afstand binnen
- * de gratis-grens valt.
+ * een tarief heeft ingesteld. Geeft de reden mee als het niet lukt, zodat
+ * dit in de UI en server-logs te achterhalen is — voorrijkosten zijn een
+ * gemak, dus falen ze altijd stil richting de offerte zelf.
  */
-export async function berekenVoorrijkostenRegel(
+async function berekenVoorrijkosten(
   instellingen: Instellingen,
   klantadres: string
-): Promise<OfferteRegel | null> {
-  if (!instellingen.voorrijkostenPerKm || instellingen.voorrijkostenPerKm <= 0) return null;
-  if (!instellingen.adres?.trim() || !klantadres?.trim()) return null;
+): Promise<VoorrijkostenResultaat> {
+  if (!instellingen.voorrijkostenPerKm || instellingen.voorrijkostenPerKm <= 0) {
+    return { regel: null, reden: "Er is geen tarief voor voorrijkosten ingesteld bij Instellingen." };
+  }
+  if (!instellingen.adres?.trim()) {
+    return { regel: null, reden: "Er is geen bedrijfsadres ingesteld bij Instellingen." };
+  }
+  if (!klantadres?.trim()) {
+    return { regel: null, reden: "Er is nog geen klantadres ingevuld bij deze offerte." };
+  }
 
   const [bedrijfCoord, klantCoord] = await Promise.all([
     geocodeAdres(instellingen.adres),
     geocodeAdres(klantadres),
   ]);
-  if (!bedrijfCoord || !klantCoord) return null;
+  if (!bedrijfCoord) {
+    console.warn(`[voorrijkosten] bedrijfsadres niet gevonden via PDOK: "${instellingen.adres}"`);
+    return {
+      regel: null,
+      reden:
+        "Het bedrijfsadres (bij Instellingen) kon niet worden gevonden. Kies het adres uit de suggestielijst in plaats van het zelf te typen.",
+    };
+  }
+  if (!klantCoord) {
+    console.warn(`[voorrijkosten] klantadres niet gevonden via PDOK: "${klantadres}"`);
+    return {
+      regel: null,
+      reden:
+        "Het klantadres kon niet worden gevonden. Kies het adres uit de suggestielijst in plaats van het zelf te typen.",
+    };
+  }
 
   const afstand = afstandInKm(bedrijfCoord, klantCoord);
   const teBerekenenKm = afstand - (instellingen.voorrijkostenGratisTotKm || 0);
-  if (teBerekenenKm <= 0) return null;
+  if (teBerekenenKm <= 0) {
+    return {
+      regel: null,
+      reden: `De afstand (${afstand.toFixed(1)} km) valt binnen de gratis afstand van ${
+        instellingen.voorrijkostenGratisTotKm || 0
+      } km, dus zijn er geen voorrijkosten berekend.`,
+    };
+  }
 
   return {
-    id: `voorrijkosten-${Date.now()}`,
-    omschrijving: `Voorrijkosten (${afstand.toFixed(1)} km)`,
-    type: "materiaal",
-    aantal: Math.round(teBerekenenKm * 10) / 10,
-    eenheid: "km",
-    prijsPerEenheid: instellingen.voorrijkostenPerKm,
+    regel: {
+      id: `voorrijkosten-${Date.now()}`,
+      omschrijving: `Voorrijkosten (${afstand.toFixed(1)} km)`,
+      type: "materiaal",
+      aantal: Math.round(teBerekenenKm * 10) / 10,
+      eenheid: "km",
+      prijsPerEenheid: instellingen.voorrijkostenPerKm,
+    },
+    reden: null,
   };
+}
+
+export async function berekenVoorrijkostenRegel(
+  instellingen: Instellingen,
+  klantadres: string
+): Promise<OfferteRegel | null> {
+  const { regel } = await berekenVoorrijkosten(instellingen, klantadres);
+  return regel;
+}
+
+/** Geeft, voor gebruik in de UI, de reden terug waarom voorrijkosten niet zijn toegepast. */
+export async function diagnoseVoorrijkosten(
+  instellingen: Instellingen,
+  klantadres: string
+): Promise<string | null> {
+  const { reden } = await berekenVoorrijkosten(instellingen, klantadres);
+  return reden;
 }
