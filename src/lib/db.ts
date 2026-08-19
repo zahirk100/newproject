@@ -1,9 +1,18 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { Factuur, FactuurStatus, Instellingen, Klant, Offerte, OfferteRegel, OfferteStatus } from "./types";
+import {
+  Factuur,
+  FactuurStatus,
+  Instellingen,
+  Klant,
+  Offerte,
+  OfferteRegel,
+  OfferteStatus,
+  PrijslijstItem,
+} from "./types";
 
 type Row = Record<string, unknown>;
 
-function rowToInstellingen(row: Row): Instellingen {
+export function rowToInstellingen(row: Row): Instellingen {
   return {
     bedrijfsnaam: (row.bedrijfsnaam as string) ?? "",
     adres: (row.adres as string) ?? "",
@@ -17,6 +26,9 @@ function rowToInstellingen(row: Row): Instellingen {
     logoUrl: (row.logo_url as string | null) ?? null,
     merkkleur: (row.merkkleur as string) ?? "#111827",
     extraInstructies: (row.extra_instructies as string) ?? "",
+    betalingstermijnDagen: Number(row.betalingstermijn_dagen ?? 14),
+    voorrijkostenPerKm: Number(row.voorrijkosten_per_km ?? 0),
+    voorrijkostenGratisTotKm: Number(row.voorrijkosten_gratis_tot_km ?? 0),
   };
 }
 
@@ -37,6 +49,12 @@ function instellingenToRow(instellingen: Partial<Instellingen>): Row {
   if (instellingen.merkkleur !== undefined) row.merkkleur = instellingen.merkkleur;
   if (instellingen.extraInstructies !== undefined)
     row.extra_instructies = instellingen.extraInstructies;
+  if (instellingen.betalingstermijnDagen !== undefined)
+    row.betalingstermijn_dagen = instellingen.betalingstermijnDagen;
+  if (instellingen.voorrijkostenPerKm !== undefined)
+    row.voorrijkosten_per_km = instellingen.voorrijkostenPerKm;
+  if (instellingen.voorrijkostenGratisTotKm !== undefined)
+    row.voorrijkosten_gratis_tot_km = instellingen.voorrijkostenGratisTotKm;
   return row;
 }
 
@@ -337,6 +355,7 @@ export async function createFactuur(
     klantEmail: string;
     regels: OfferteRegel[];
     btwPercentage: number;
+    vervaldatum?: string;
   }
 ): Promise<Factuur> {
   const { data, error } = await supabase
@@ -350,6 +369,7 @@ export async function createFactuur(
       klant_email: factuur.klantEmail,
       regels: factuur.regels,
       btw_percentage: factuur.btwPercentage,
+      ...(factuur.vervaldatum ? { vervaldatum: factuur.vervaldatum } : {}),
     })
     .select()
     .single();
@@ -372,4 +392,78 @@ export async function updateFactuurStatus(
     .single();
   if (error || !data) throw new Error(`Bijwerken van factuur mislukt: ${error?.message}`);
   return rowToFactuur(data);
+}
+
+function rowToPrijslijstItem(row: Row): PrijslijstItem {
+  return {
+    id: row.id as string,
+    naam: (row.naam as string) ?? "",
+    type: (row.type as PrijslijstItem["type"]) ?? "materiaal",
+    eenheid: (row.eenheid as string) ?? "stuk",
+    prijs: Number(row.prijs ?? 0),
+    createdAt: row.created_at as string,
+  };
+}
+
+export async function listPrijslijst(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<PrijslijstItem[]> {
+  const { data, error } = await supabase
+    .from("prijslijst")
+    .select("*")
+    .eq("profile_id", userId)
+    .order("naam", { ascending: true });
+  if (error) throw new Error(`Kon prijslijst niet laden: ${error.message}`);
+  return (data ?? []).map(rowToPrijslijstItem);
+}
+
+export async function createPrijslijstItem(
+  supabase: SupabaseClient,
+  userId: string,
+  item: Omit<PrijslijstItem, "id" | "createdAt">
+): Promise<PrijslijstItem> {
+  const { data, error } = await supabase
+    .from("prijslijst")
+    .insert({
+      profile_id: userId,
+      naam: item.naam,
+      type: item.type,
+      eenheid: item.eenheid,
+      prijs: item.prijs,
+    })
+    .select()
+    .single();
+  if (error || !data) throw new Error(`Aanmaken van prijslijst-item mislukt: ${error?.message}`);
+  return rowToPrijslijstItem(data);
+}
+
+export async function updatePrijslijstItem(
+  supabase: SupabaseClient,
+  userId: string,
+  id: string,
+  item: Partial<Omit<PrijslijstItem, "id" | "createdAt">>
+): Promise<PrijslijstItem> {
+  const { data, error } = await supabase
+    .from("prijslijst")
+    .update(item)
+    .eq("profile_id", userId)
+    .eq("id", id)
+    .select()
+    .single();
+  if (error || !data) throw new Error(`Bijwerken van prijslijst-item mislukt: ${error?.message}`);
+  return rowToPrijslijstItem(data);
+}
+
+export async function deletePrijslijstItem(
+  supabase: SupabaseClient,
+  userId: string,
+  id: string
+): Promise<void> {
+  const { error } = await supabase
+    .from("prijslijst")
+    .delete()
+    .eq("profile_id", userId)
+    .eq("id", id);
+  if (error) throw new Error(`Verwijderen van prijslijst-item mislukt: ${error.message}`);
 }

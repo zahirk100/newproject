@@ -9,6 +9,7 @@ const LINKS = [
   { href: "/app", label: "Dashboard", icon: "📊" },
   { href: "/app/offertes/nieuw", label: "Nieuwe offerte", icon: "➕" },
   { href: "/app/klanten", label: "Klanten", icon: "👥" },
+  { href: "/app/prijslijst", label: "Prijslijst", icon: "💰" },
   { href: "/app/facturen", label: "Facturen", icon: "🧾" },
   { href: "/app/instellingen", label: "Instellingen", icon: "⚙️" },
 ];

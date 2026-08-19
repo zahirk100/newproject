@@ -41,6 +41,9 @@ export async function POST(
   if (actie === "geaccepteerd") {
     try {
       const factuurNummer = await nextFactuurNummer(admin, profileId);
+      const vervaldatum = new Date(
+        Date.now() + (instellingen.betalingstermijnDagen || 14) * 24 * 60 * 60 * 1000
+      ).toISOString();
       const factuur = await createFactuur(admin, profileId, {
         offerteId: bijgewerkteOfferte.id,
         factuurNummer,
@@ -49,6 +52,7 @@ export async function POST(
         klantEmail: bijgewerkteOfferte.klantEmail,
         regels: bijgewerkteOfferte.regels,
         btwPercentage: bijgewerkteOfferte.btwPercentage,
+        vervaldatum,
       });
       const pdfBuffer = await renderToBuffer(
         <FactuurPdf factuur={factuur} instellingen={instellingen} />

@@ -18,11 +18,17 @@ create table if not exists public.profiles (
   logo_url text,
   merkkleur text not null default '#111827',
   extra_instructies text not null default '',
+  betalingstermijn_dagen integer not null default 14,
+  voorrijkosten_per_km numeric not null default 0,
+  voorrijkosten_gratis_tot_km numeric not null default 0,
   created_at timestamptz not null default now()
 );
 
--- Idempotent: voegt extra_instructies toe als de tabel al bestond
+-- Idempotent: voegt nieuwe profielvelden toe als de tabel al bestond
 alter table public.profiles add column if not exists extra_instructies text not null default '';
+alter table public.profiles add column if not exists betalingstermijn_dagen integer not null default 14;
+alter table public.profiles add column if not exists voorrijkosten_per_km numeric not null default 0;
+alter table public.profiles add column if not exists voorrijkosten_gratis_tot_km numeric not null default 0;
 
 alter table public.profiles enable row level security;
 
@@ -134,6 +140,25 @@ create policy "facturen: alleen eigen bedrijf" on public.facturen
 
 create index if not exists facturen_profile_id_idx on public.facturen (profile_id);
 create index if not exists facturen_offerte_id_idx on public.facturen (offerte_id);
+
+-- ─── prijslijst: eigen materiaal-/dienstenprijzen per bedrijf ─────────────
+create table if not exists public.prijslijst (
+  id uuid primary key default gen_random_uuid(),
+  profile_id uuid not null references public.profiles (id) on delete cascade,
+  naam text not null,
+  type text not null default 'materiaal' check (type in ('materiaal', 'arbeid')),
+  eenheid text not null default 'stuk',
+  prijs numeric not null default 0,
+  created_at timestamptz not null default now()
+);
+
+alter table public.prijslijst enable row level security;
+
+drop policy if exists "prijslijst: alleen eigen bedrijf" on public.prijslijst;
+create policy "prijslijst: alleen eigen bedrijf" on public.prijslijst
+  for all using (profile_id = auth.uid()) with check (profile_id = auth.uid());
+
+create index if not exists prijslijst_profile_id_idx on public.prijslijst (profile_id);
 
 -- ─── storage: logo's per bedrijf ────────────────────────────────────────
 insert into storage.buckets (id, name, public)
