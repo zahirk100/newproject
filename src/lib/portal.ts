@@ -1,26 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { Instellingen, Offerte, OfferteStatus } from "./types";
-import { rowToInstellingen } from "./db";
+import { Instellingen, Offerte } from "./types";
+import { rowToInstellingen, rowToOfferte } from "./db";
 
 type Row = Record<string, unknown>;
-
-function rijNaarOfferte(row: Row): Offerte {
-  return {
-    id: row.id as string,
-    offerteNummer: row.offerte_nummer as string,
-    klantId: (row.klant_id as string | null) ?? null,
-    klantnaam: (row.klant_naam as string) ?? "",
-    klantadres: (row.klant_adres as string) ?? "",
-    klantEmail: (row.klant_email as string) ?? "",
-    klusOmschrijving: (row.klus_omschrijving as string) ?? "",
-    regels: row.regels as Offerte["regels"],
-    btwPercentage: Number(row.btw_percentage ?? 21),
-    status: (row.status as OfferteStatus) ?? "concept",
-    opmerkingen: (row.opmerkingen as string) ?? "",
-    createdAt: row.created_at as string,
-    updatedAt: row.updated_at as string,
-  };
-}
 
 /**
  * Haalt een offerte + bijbehorend bedrijfsprofiel op voor het publieke
@@ -44,7 +26,7 @@ export async function haalOfferteVoorPortaal(
   if (!profiles) return undefined;
 
   return {
-    offerte: rijNaarOfferte(offerteRow),
+    offerte: rowToOfferte(offerteRow),
     instellingen: rowToInstellingen(profiles),
     profileId: offerteRow.profile_id as string,
   };
@@ -68,5 +50,42 @@ export async function verwerkKlantReactie(
     .select()
     .maybeSingle();
   if (error || !data) return undefined;
-  return rijNaarOfferte(data);
+  return rowToOfferte(data);
+}
+
+/**
+ * Verwerkt de reactie van de klant op een planningsvoorstel: akkoord
+ * (→ bevestigd) of een tegenvoorstel met een andere datum
+ * (→ tegenvoorstel, wacht op de ondernemer). Alleen toegestaan als de
+ * offerte op dit moment daadwerkelijk op een reactie van de klant wacht
+ * (planning_status = 'voorgesteld'), anders voorkomt de voorwaardelijke
+ * update dubbele/verlopen reacties.
+ */
+export async function verwerkPlanningReactie(
+  adminClient: SupabaseClient,
+  id: string,
+  actie: "akkoord" | "tegenvoorstel",
+  nieuweDatum?: string,
+  notitie?: string
+): Promise<Offerte | undefined> {
+  const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (actie === "akkoord") {
+    update.planning_status = "bevestigd";
+  } else {
+    if (!nieuweDatum) return undefined;
+    update.planning_status = "tegenvoorstel";
+    update.planning_datum = new Date(nieuweDatum).toISOString();
+    update.planning_notitie = notitie?.trim() || "";
+    update.planning_voorgesteld_door = "klant";
+  }
+
+  const { data, error } = await adminClient
+    .from("offertes")
+    .update(update)
+    .eq("id", id)
+    .eq("planning_status", "voorgesteld")
+    .select()
+    .maybeSingle();
+  if (error || !data) return undefined;
+  return rowToOfferte(data);
 }

@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { haalOfferteVoorPortaal } from "@/lib/portal";
 import { berekenTotalen, formatEuro, regelTotaal } from "@/lib/format";
 import OfferteActies from "./OfferteActies";
+import PlanningSectie from "./PlanningSectie";
 
 export const dynamic = "force-dynamic";
 
@@ -104,6 +105,15 @@ export default async function PubliekeOffertePagina({
         )}
 
         <OfferteActies offerteId={offerte.id} status={offerte.status} />
+
+        {offerte.status === "geaccepteerd" && (
+          <PlanningSectie
+            offerteId={offerte.id}
+            planningStatus={offerte.planningStatus}
+            planningDatum={offerte.planningDatum}
+            planningNotitie={offerte.planningNotitie}
+          />
+        )}
       </div>
     </div>
   );
