@@ -1,8 +1,15 @@
 import { promises as fs } from "fs";
+import os from "os";
 import path from "path";
 import { DEFAULT_INSTELLINGEN, Instellingen, Offerte } from "./types";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+// Serverless hosts (zoals Vercel) hebben een read-only bestandssysteem
+// behalve os.tmpdir(); lokaal blijven we in het project schrijven zodat data
+// een dev-server-herstart overleeft. tmpdir is niet persistent tussen
+// serverless-invocaties — vervang dit door een echte database voor productie.
+const DATA_DIR = process.env.VERCEL
+  ? path.join(os.tmpdir(), "offerteflits-data")
+  : path.join(process.cwd(), "data");
 const OFFERTES_FILE = path.join(DATA_DIR, "offertes.json");
 const INSTELLINGEN_FILE = path.join(DATA_DIR, "instellingen.json");
 
