@@ -22,6 +22,7 @@ create table if not exists public.profiles (
 
 alter table public.profiles enable row level security;
 
+drop policy if exists "profiel: alleen eigenaar" on public.profiles;
 create policy "profiel: alleen eigenaar" on public.profiles
   for all using (id = auth.uid()) with check (id = auth.uid());
 
@@ -61,6 +62,7 @@ create table if not exists public.klanten (
 
 alter table public.klanten enable row level security;
 
+drop policy if exists "klanten: alleen eigen bedrijf" on public.klanten;
 create policy "klanten: alleen eigen bedrijf" on public.klanten
   for all using (profile_id = auth.uid()) with check (profile_id = auth.uid());
 
@@ -85,8 +87,12 @@ create table if not exists public.offertes (
   updated_at timestamptz not null default now()
 );
 
+-- Idempotent: voegt klant_email toe als de tabel al bestond van een eerdere run
+alter table public.offertes add column if not exists klant_email text not null default '';
+
 alter table public.offertes enable row level security;
 
+drop policy if exists "offertes: alleen eigen bedrijf" on public.offertes;
 create policy "offertes: alleen eigen bedrijf" on public.offertes
   for all using (profile_id = auth.uid()) with check (profile_id = auth.uid());
 
@@ -98,10 +104,12 @@ insert into storage.buckets (id, name, public)
 values ('logos', 'logos', true)
 on conflict (id) do nothing;
 
+drop policy if exists "logo's: iedereen mag lezen (publieke bucket)" on storage.objects;
 create policy "logo's: iedereen mag lezen (publieke bucket)"
   on storage.objects for select
   using (bucket_id = 'logos');
 
+drop policy if exists "logo's: alleen eigenaar mag uploaden/wijzigen/verwijderen" on storage.objects;
 create policy "logo's: alleen eigenaar mag uploaden/wijzigen/verwijderen"
   on storage.objects for all
   using (bucket_id = 'logos' and (storage.foldername(name))[1] = auth.uid()::text)
