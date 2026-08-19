@@ -16,13 +16,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const instellingen = await getInstellingen(supabase, user.id);
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen flex-col md:flex-row">
       <AppSidebar
         bedrijfsnaam={instellingen.bedrijfsnaam}
         logoUrl={instellingen.logoUrl}
         merkkleur={instellingen.merkkleur}
       />
-      <div className="flex-1">{children}</div>
+      <div className="min-w-0 flex-1">{children}</div>
     </div>
   );
 }

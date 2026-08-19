@@ -279,7 +279,8 @@ export default function OfferteEditor({
       </div>
 
       {/* Regels */}
-      <table className="mb-2 w-full border-collapse text-sm">
+      <div className="mb-2 overflow-x-auto print:overflow-visible">
+      <table className="w-full min-w-[640px] border-collapse text-sm print:min-w-0">
         <thead>
           <tr className="border-b border-black/10 text-left text-xs uppercase tracking-wide text-black/50 dark:border-white/10 print:border-black print:text-black">
             <th className="py-2 pr-2">Omschrijving</th>
@@ -368,6 +369,7 @@ export default function OfferteEditor({
           ))}
         </tbody>
       </table>
+      </div>
 
       <button
         onClick={voegRegelToe}
