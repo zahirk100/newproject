@@ -45,6 +45,9 @@ export interface Instellingen {
   logoUrl: string | null;
   merkkleur: string;
   extraInstructies: string;
+  betalingstermijnDagen: number;
+  voorrijkostenPerKm: number;
+  voorrijkostenGratisTotKm: number;
 }
 
 export const DEFAULT_INSTELLINGEN: Instellingen = {
@@ -60,6 +63,9 @@ export const DEFAULT_INSTELLINGEN: Instellingen = {
   logoUrl: null,
   merkkleur: "#111827",
   extraInstructies: "",
+  betalingstermijnDagen: 14,
+  voorrijkostenPerKm: 0,
+  voorrijkostenGratisTotKm: 0,
 };
 
 export interface Klant {
@@ -68,6 +74,15 @@ export interface Klant {
   adres: string;
   email: string;
   telefoon: string;
+  createdAt: string;
+}
+
+export interface PrijslijstItem {
+  id: string;
+  naam: string;
+  type: RegelType;
+  eenheid: string;
+  prijs: number;
   createdAt: string;
 }
 

@@ -1,24 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { Instellingen, Offerte, OfferteStatus } from "./types";
+import { rowToInstellingen } from "./db";
 
 type Row = Record<string, unknown>;
-
-function rijNaarInstellingen(row: Row): Instellingen {
-  return {
-    bedrijfsnaam: (row.bedrijfsnaam as string) ?? "",
-    adres: (row.adres as string) ?? "",
-    kvkNummer: (row.kvk_nummer as string) ?? "",
-    btwNummer: (row.btw_nummer as string) ?? "",
-    iban: (row.iban as string) ?? "",
-    email: (row.email as string) ?? "",
-    telefoon: (row.telefoon as string) ?? "",
-    standaardUurtarief: Number(row.standaard_uurtarief ?? 55),
-    standaardBtwPercentage: Number(row.standaard_btw_percentage ?? 21),
-    logoUrl: (row.logo_url as string | null) ?? null,
-    merkkleur: (row.merkkleur as string) ?? "#111827",
-    extraInstructies: (row.extra_instructies as string) ?? "",
-  };
-}
 
 function rijNaarOfferte(row: Row): Offerte {
   return {
@@ -61,7 +45,7 @@ export async function haalOfferteVoorPortaal(
 
   return {
     offerte: rijNaarOfferte(offerteRow),
-    instellingen: rijNaarInstellingen(profiles),
+    instellingen: rowToInstellingen(profiles),
     profileId: offerteRow.profile_id as string,
   };
 }

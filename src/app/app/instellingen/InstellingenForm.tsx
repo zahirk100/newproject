@@ -208,6 +208,75 @@ export default function InstellingenForm({
           ))}
         </div>
 
+        <div className="rounded-lg border border-black/10 p-5 dark:border-white/10">
+          <h2 className="mb-4 text-sm font-semibold">Facturatie &amp; voorrijkosten</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div>
+              <label className="mb-1 block text-sm font-medium" htmlFor="betalingstermijnDagen">
+                Betalingstermijn (dagen)
+              </label>
+              <input
+                id="betalingstermijnDagen"
+                type="number"
+                value={instellingen.betalingstermijnDagen}
+                onChange={(e) =>
+                  setInstellingen((huidig) => ({
+                    ...huidig,
+                    betalingstermijnDagen: parseInt(e.target.value, 10) || 0,
+                  }))
+                }
+                className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
+              />
+              <p className="mt-1 text-xs text-black/50 dark:text-white/50">
+                Bepaalt automatisch de vervaldatum van elke factuur.
+              </p>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium" htmlFor="voorrijkostenPerKm">
+                Voorrijkosten (€/km)
+              </label>
+              <input
+                id="voorrijkostenPerKm"
+                type="number"
+                step="0.01"
+                value={instellingen.voorrijkostenPerKm}
+                onChange={(e) =>
+                  setInstellingen((huidig) => ({
+                    ...huidig,
+                    voorrijkostenPerKm: parseFloat(e.target.value) || 0,
+                  }))
+                }
+                className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
+              />
+              <p className="mt-1 text-xs text-black/50 dark:text-white/50">
+                0 = geen automatische voorrijkosten.
+              </p>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium" htmlFor="voorrijkostenGratisTotKm">
+                Gratis tot (km)
+              </label>
+              <input
+                id="voorrijkostenGratisTotKm"
+                type="number"
+                step="0.1"
+                value={instellingen.voorrijkostenGratisTotKm}
+                onChange={(e) =>
+                  setInstellingen((huidig) => ({
+                    ...huidig,
+                    voorrijkostenGratisTotKm: parseFloat(e.target.value) || 0,
+                  }))
+                }
+                className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
+              />
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-black/50 dark:text-white/50">
+            Bij een ingevuld klantadres wordt automatisch een voorrijkosten-regel toegevoegd op
+            basis van de (hemelsbrede) afstand tot je bedrijfsadres.
+          </p>
+        </div>
+
         <div>
           <label className="mb-1 block text-sm font-medium" htmlFor="extraInstructies">
             Standaardinstructies voor de AI

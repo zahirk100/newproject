@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthedContext } from "@/lib/apiAuth";
-import { createKlant, createOfferte, getInstellingen, listOffertes, nextOfferteNummer } from "@/lib/db";
+import {
+  createKlant,
+  createOfferte,
+  getInstellingen,
+  listOffertes,
+  listPrijslijst,
+  nextOfferteNummer,
+} from "@/lib/db";
 import { genereerOfferteRegels } from "@/lib/ai";
+import { berekenVoorrijkostenRegel } from "@/lib/geocode";
 
 export async function GET() {
   const { supabase, user } = await getAuthedContext();
@@ -29,7 +37,10 @@ export async function POST(request: NextRequest) {
   }
 
   const instellingen = await getInstellingen(supabase, user.id);
-  const regels = await genereerOfferteRegels(klusOmschrijving, instellingen);
+  const prijslijst = await listPrijslijst(supabase, user.id);
+  const regels = await genereerOfferteRegels(klusOmschrijving, instellingen, prijslijst);
+  const voorrijkostenRegel = await berekenVoorrijkostenRegel(instellingen, klantadres ?? "");
+  if (voorrijkostenRegel) regels.push(voorrijkostenRegel);
   const offerteNummer = await nextOfferteNummer(supabase, user.id);
 
   // Bij een nieuwe (nog niet bestaande) klant meteen een klantenrecord

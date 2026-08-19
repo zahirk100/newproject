@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { Instellingen, OfferteRegel, RegelType } from "./types";
+import { Instellingen, OfferteRegel, PrijslijstItem, RegelType } from "./types";
 
 const RegelSchema = z.object({
   omschrijving: z.string(),
@@ -28,11 +28,16 @@ function withIds(regels: z.infer<typeof RegelSchema>[]): OfferteRegel[] {
 
 export async function genereerOfferteRegels(
   klusOmschrijving: string,
-  instellingen: Instellingen
+  instellingen: Instellingen,
+  prijslijst: PrijslijstItem[] = []
 ): Promise<OfferteRegel[]> {
   if (process.env.ANTHROPIC_API_KEY) {
     try {
       const client = new Anthropic();
+      const prijslijstTekst = prijslijst.length
+        ? "\n\nPrijslijst van dit bedrijf — gebruik deze exacte prijzen wanneer een regel hiermee overeenkomt, in plaats van zelf een prijs te schatten:\n" +
+          prijslijst.map((item) => `- ${item.naam} (${item.type}, per ${item.eenheid}): €${item.prijs}`).join("\n")
+        : "";
       const response = await client.messages.parse({
         model: "claude-opus-5",
         max_tokens: 4096,
@@ -47,7 +52,8 @@ export async function genereerOfferteRegels(
           "verzonnen merk/model). Wees terughoudend en realistisch met prijzen; noem geen valse precisie of details die je niet weet." +
           (instellingen.extraInstructies?.trim()
             ? `\n\nBedrijfsspecifieke instructies (altijd toepassen waar relevant): ${instellingen.extraInstructies.trim()}`
-            : ""),
+            : "") +
+          prijslijstTekst,
         messages: [
           {
             role: "user",
