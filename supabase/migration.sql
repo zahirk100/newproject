@@ -29,6 +29,7 @@ alter table public.profiles add column if not exists extra_instructies text not 
 alter table public.profiles add column if not exists betalingstermijn_dagen integer not null default 14;
 alter table public.profiles add column if not exists voorrijkosten_per_km numeric not null default 0;
 alter table public.profiles add column if not exists voorrijkosten_gratis_tot_km numeric not null default 0;
+alter table public.profiles add column if not exists standaard_vragen text[] not null default '{}';
 
 alter table public.profiles enable row level security;
 
@@ -88,6 +89,7 @@ create table if not exists public.offertes (
   klant_adres text not null default '',
   klant_email text not null default '',
   klus_omschrijving text not null default '',
+  foto_urls text[] not null default '{}',
   regels jsonb not null default '[]'::jsonb,
   btw_percentage numeric not null default 21,
   status text not null default 'concept'
@@ -103,6 +105,7 @@ create table if not exists public.offertes (
 
 -- Idempotent: voegt klant_email toe als de tabel al bestond van een eerdere run
 alter table public.offertes add column if not exists klant_email text not null default '';
+alter table public.offertes add column if not exists foto_urls text[] not null default '{}';
 
 -- Idempotent: voegt planning-velden toe als de tabel al bestond
 alter table public.offertes add column if not exists planning_status text;
@@ -193,3 +196,20 @@ create policy "logo's: alleen eigenaar mag uploaden/wijzigen/verwijderen"
   on storage.objects for all
   using (bucket_id = 'logos' and (storage.foldername(name))[1] = auth.uid()::text)
   with check (bucket_id = 'logos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- ─── storage: foto's bij offerte-aanvragen (anonieme klant, geen account) ──
+insert into storage.buckets (id, name, public)
+values ('aanvraag-fotos', 'aanvraag-fotos', true)
+on conflict (id) do nothing;
+
+drop policy if exists "aanvraag-fotos: iedereen mag lezen (publieke bucket)" on storage.objects;
+create policy "aanvraag-fotos: iedereen mag lezen (publieke bucket)"
+  on storage.objects for select
+  using (bucket_id = 'aanvraag-fotos');
+
+-- Klanten vullen dit formulier in zonder account, dus moet uploaden zonder
+-- inlog kunnen — er is geen auth.uid() om de policy op te scopen.
+drop policy if exists "aanvraag-fotos: iedereen mag uploaden (publiek formulier)" on storage.objects;
+create policy "aanvraag-fotos: iedereen mag uploaden (publiek formulier)"
+  on storage.objects for insert
+  with check (bucket_id = 'aanvraag-fotos');

@@ -29,6 +29,7 @@ export function rowToInstellingen(row: Row): Instellingen {
     betalingstermijnDagen: Number(row.betalingstermijn_dagen ?? 14),
     voorrijkostenPerKm: Number(row.voorrijkosten_per_km ?? 0),
     voorrijkostenGratisTotKm: Number(row.voorrijkosten_gratis_tot_km ?? 0),
+    standaardVragen: (row.standaard_vragen as string[]) ?? [],
   };
 }
 
@@ -55,6 +56,8 @@ function instellingenToRow(instellingen: Partial<Instellingen>): Row {
     row.voorrijkosten_per_km = instellingen.voorrijkostenPerKm;
   if (instellingen.voorrijkostenGratisTotKm !== undefined)
     row.voorrijkosten_gratis_tot_km = instellingen.voorrijkostenGratisTotKm;
+  if (instellingen.standaardVragen !== undefined)
+    row.standaard_vragen = instellingen.standaardVragen;
   return row;
 }
 
@@ -185,6 +188,7 @@ export function rowToOfferte(row: Row): Offerte {
     klantadres: (row.klant_adres as string) ?? "",
     klantEmail: (row.klant_email as string) ?? "",
     klusOmschrijving: (row.klus_omschrijving as string) ?? "",
+    fotoUrls: (row.foto_urls as string[]) ?? [],
     regels: (row.regels as OfferteRegel[]) ?? [],
     btwPercentage: Number(row.btw_percentage ?? 21),
     status: (row.status as OfferteStatus) ?? "concept",
@@ -245,6 +249,7 @@ export async function createOfferte(
     klantadres: string;
     klantEmail: string;
     klusOmschrijving: string;
+    fotoUrls?: string[];
     regels: OfferteRegel[];
     btwPercentage: number;
     status?: OfferteStatus;
@@ -260,6 +265,7 @@ export async function createOfferte(
       klant_adres: offerte.klantadres,
       klant_email: offerte.klantEmail,
       klus_omschrijving: offerte.klusOmschrijving,
+      foto_urls: offerte.fotoUrls ?? [],
       regels: offerte.regels,
       btw_percentage: offerte.btwPercentage,
       ...(offerte.status ? { status: offerte.status } : {}),
@@ -282,6 +288,7 @@ export async function updateOfferte(
   if (patch.klantadres !== undefined) row.klant_adres = patch.klantadres;
   if (patch.klantEmail !== undefined) row.klant_email = patch.klantEmail;
   if (patch.klusOmschrijving !== undefined) row.klus_omschrijving = patch.klusOmschrijving;
+  if (patch.fotoUrls !== undefined) row.foto_urls = patch.fotoUrls;
   if (patch.regels !== undefined) row.regels = patch.regels;
   if (patch.btwPercentage !== undefined) row.btw_percentage = patch.btwPercentage;
   if (patch.status !== undefined) row.status = patch.status;

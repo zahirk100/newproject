@@ -41,9 +41,27 @@ export default function AanvragenInbox({ aanvragen: initieleAanvragen }: { aanvr
         <li key={aanvraag.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
           <div>
             <div className="font-medium">{aanvraag.klantnaam || "Naamloze aanvraag"}</div>
-            <div className="line-clamp-1 text-sm text-black/60 dark:text-white/60">
+            <div className="line-clamp-2 whitespace-pre-line text-sm text-black/60 dark:text-white/60">
               {aanvraag.klusOmschrijving}
             </div>
+            {aanvraag.fotoUrls.length > 0 && (
+              <div className="mt-1 flex gap-1">
+                {aanvraag.fotoUrls.slice(0, 4).map((url) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={url}
+                    src={url}
+                    alt=""
+                    className="h-10 w-10 rounded object-cover"
+                  />
+                ))}
+                {aanvraag.fotoUrls.length > 4 && (
+                  <span className="flex h-10 w-10 items-center justify-center rounded bg-black/5 text-xs text-black/50 dark:bg-white/10 dark:text-white/50">
+                    +{aanvraag.fotoUrls.length - 4}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button

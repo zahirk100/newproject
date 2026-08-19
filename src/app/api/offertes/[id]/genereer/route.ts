@@ -19,7 +19,12 @@ export async function POST(
   ]);
   if (!offerte) return NextResponse.json({ error: "Niet gevonden" }, { status: 404 });
 
-  const regels = await genereerOfferteRegels(offerte.klusOmschrijving, instellingen, prijslijst);
+  const regels = await genereerOfferteRegels(
+    offerte.klusOmschrijving,
+    instellingen,
+    prijslijst,
+    offerte.fotoUrls
+  );
   const voorrijkostenRegel = await berekenVoorrijkostenRegel(instellingen, offerte.klantadres);
   if (voorrijkostenRegel) regels.push(voorrijkostenRegel);
 

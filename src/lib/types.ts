@@ -27,6 +27,7 @@ export interface Offerte {
   klantadres: string;
   klantEmail: string;
   klusOmschrijving: string;
+  fotoUrls: string[];
   regels: OfferteRegel[];
   btwPercentage: number;
   status: OfferteStatus;
@@ -55,6 +56,7 @@ export interface Instellingen {
   betalingstermijnDagen: number;
   voorrijkostenPerKm: number;
   voorrijkostenGratisTotKm: number;
+  standaardVragen: string[];
 }
 
 export const DEFAULT_INSTELLINGEN: Instellingen = {
@@ -73,6 +75,7 @@ export const DEFAULT_INSTELLINGEN: Instellingen = {
   betalingstermijnDagen: 14,
   voorrijkostenPerKm: 0,
   voorrijkostenGratisTotKm: 0,
+  standaardVragen: [],
 };
 
 export interface Klant {
