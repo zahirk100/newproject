@@ -6,7 +6,7 @@ import { verstuurOfferteEmail } from "@/lib/email";
 import { OffertePdf } from "@/lib/pdf/OffertePdf";
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { supabase, user } = await getAuthedContext();
@@ -23,7 +23,8 @@ export async function POST(
     const pdfBuffer = await renderToBuffer(
       <OffertePdf offerte={offerte} instellingen={instellingen} />
     );
-    await verstuurOfferteEmail(offerte, instellingen, pdfBuffer);
+    const portaalUrl = `${new URL(request.url).origin}/offerte/${offerte.id}`;
+    await verstuurOfferteEmail(offerte, instellingen, pdfBuffer, portaalUrl);
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Versturen mislukt" },

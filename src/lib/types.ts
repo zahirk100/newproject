@@ -63,3 +63,20 @@ export interface Klant {
   telefoon: string;
   createdAt: string;
 }
+
+export type FactuurStatus = "open" | "betaald";
+
+export interface Factuur {
+  id: string;
+  offerteId: string | null;
+  factuurNummer: string;
+  klantnaam: string;
+  klantadres: string;
+  klantEmail: string;
+  regels: OfferteRegel[];
+  btwPercentage: number;
+  status: FactuurStatus;
+  factuurdatum: string;
+  vervaldatum: string;
+  createdAt: string;
+}

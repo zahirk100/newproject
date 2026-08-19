@@ -7,6 +7,8 @@ function isPubliekPad(pathname: string) {
   if (PUBLIEKE_PADEN.includes(pathname)) return true;
   if (pathname.startsWith("/_next") || pathname.startsWith("/favicon")) return true;
   if (pathname.startsWith("/auth/")) return true;
+  if (pathname.startsWith("/offerte/")) return true;
+  if (pathname.startsWith("/api/offerte/")) return true;
   return false;
 }
 

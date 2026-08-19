@@ -99,6 +99,32 @@ create policy "offertes: alleen eigen bedrijf" on public.offertes
 create index if not exists offertes_profile_id_idx on public.offertes (profile_id);
 create index if not exists offertes_klant_id_idx on public.offertes (klant_id);
 
+-- ─── facturen: automatisch gegenereerd bij acceptatie van een offerte ──────
+create table if not exists public.facturen (
+  id uuid primary key default gen_random_uuid(),
+  profile_id uuid not null references public.profiles (id) on delete cascade,
+  offerte_id uuid references public.offertes (id) on delete set null,
+  factuur_nummer text not null,
+  klant_naam text not null default '',
+  klant_adres text not null default '',
+  klant_email text not null default '',
+  regels jsonb not null default '[]'::jsonb,
+  btw_percentage numeric not null default 21,
+  status text not null default 'open' check (status in ('open', 'betaald')),
+  factuurdatum timestamptz not null default now(),
+  vervaldatum timestamptz not null default (now() + interval '14 days'),
+  created_at timestamptz not null default now()
+);
+
+alter table public.facturen enable row level security;
+
+drop policy if exists "facturen: alleen eigen bedrijf" on public.facturen;
+create policy "facturen: alleen eigen bedrijf" on public.facturen
+  for all using (profile_id = auth.uid()) with check (profile_id = auth.uid());
+
+create index if not exists facturen_profile_id_idx on public.facturen (profile_id);
+create index if not exists facturen_offerte_id_idx on public.facturen (offerte_id);
+
 -- ─── storage: logo's per bedrijf ────────────────────────────────────────
 insert into storage.buckets (id, name, public)
 values ('logos', 'logos', true)
