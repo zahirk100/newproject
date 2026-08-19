@@ -28,6 +28,7 @@ export default function InstellingenForm({
   const [logoFout, setLogoFout] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [linkGekopieerd, setLinkGekopieerd] = useState(false);
+  const [opslaanFout, setOpslaanFout] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -45,15 +46,21 @@ export default function InstellingenForm({
     event.preventDefault();
     setOpslaan(true);
     setOpgeslagen(false);
+    setOpslaanFout(null);
     try {
       const response = await fetch("/api/instellingen", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(instellingen),
       });
-      const bijgewerkt = await response.json();
-      setInstellingen(bijgewerkt);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Opslaan mislukt");
+      }
+      setInstellingen(data);
       setOpgeslagen(true);
+    } catch (error) {
+      setOpslaanFout(error instanceof Error ? error.message : "Opslaan mislukt");
     } finally {
       setOpslaan(false);
     }
@@ -295,6 +302,12 @@ export default function InstellingenForm({
             placeholder="Bijv. Wij geven altijd 2 jaar garantie op arbeid. Voor cv-ketels gebruiken wij standaard Intergas. Offertes zijn 30 dagen geldig. Voeg bij loodgieterswerk altijd een aparte regel 'afvoerkosten oud materiaal' toe."
           />
         </div>
+
+        {opslaanFout && (
+          <p className="text-sm text-red-600 dark:text-red-400">
+            Opslaan mislukt: {opslaanFout}
+          </p>
+        )}
 
         <button
           type="submit"
