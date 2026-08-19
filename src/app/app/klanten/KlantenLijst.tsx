@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Klant } from "@/lib/types";
+import AdresAutocomplete from "@/components/AdresAutocomplete";
 
 function leegFormulier() {
   return { naam: "", adres: "", email: "", telefoon: "" };
@@ -69,11 +70,11 @@ export default function KlantenLijst({ initialeKlanten }: { initialeKlanten: Kla
           onChange={(e) => setNieuw((h) => ({ ...h, naam: e.target.value }))}
           className="rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
         />
-        <input
+        <AdresAutocomplete
           placeholder="Adres"
           value={nieuw.adres}
-          onChange={(e) => setNieuw((h) => ({ ...h, adres: e.target.value }))}
-          className="rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
+          onChange={(waarde) => setNieuw((h) => ({ ...h, adres: waarde }))}
+          className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
         />
         <input
           placeholder="E-mail"
@@ -111,10 +112,10 @@ export default function KlantenLijst({ initialeKlanten }: { initialeKlanten: Kla
                   onChange={(e) => setBewerkForm((h) => ({ ...h, naam: e.target.value }))}
                   className="rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
                 />
-                <input
+                <AdresAutocomplete
                   value={bewerkForm.adres}
-                  onChange={(e) => setBewerkForm((h) => ({ ...h, adres: e.target.value }))}
-                  className="rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
+                  onChange={(waarde) => setBewerkForm((h) => ({ ...h, adres: waarde }))}
+                  className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
                 />
                 <input
                   value={bewerkForm.email}
