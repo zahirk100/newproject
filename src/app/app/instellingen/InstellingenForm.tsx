@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Instellingen } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
 import AdresAutocomplete from "@/components/AdresAutocomplete";
+import NumberInput from "@/components/NumberInput";
 
 const VELDEN: { key: keyof Instellingen; label: string; type?: string }[] = [
   { key: "kvkNummer", label: "KvK-nummer" },
@@ -184,28 +185,37 @@ export default function InstellingenForm({
               className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
             />
           </div>
-          {VELDEN.map((veld) => (
-            <div key={veld.key}>
-              <label className="mb-1 block text-sm font-medium" htmlFor={veld.key}>
-                {veld.label}
-              </label>
-              <input
-                id={veld.key}
-                type={veld.type ?? "text"}
-                value={instellingen[veld.key] as string | number}
-                onChange={(e) =>
-                  setInstellingen((huidig) => ({
-                    ...huidig,
-                    [veld.key]:
-                      veld.type === "number"
-                        ? parseFloat(e.target.value) || 0
-                        : e.target.value,
-                  }))
-                }
-                className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
-              />
-            </div>
-          ))}
+          {VELDEN.map((veld) =>
+            veld.type === "number" ? (
+              <div key={veld.key}>
+                <label className="mb-1 block text-sm font-medium" htmlFor={veld.key}>
+                  {veld.label}
+                </label>
+                <NumberInput
+                  id={veld.key}
+                  value={instellingen[veld.key] as number}
+                  onChange={(waarde) =>
+                    setInstellingen((huidig) => ({ ...huidig, [veld.key]: waarde }))
+                  }
+                  className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
+                />
+              </div>
+            ) : (
+              <div key={veld.key}>
+                <label className="mb-1 block text-sm font-medium" htmlFor={veld.key}>
+                  {veld.label}
+                </label>
+                <input
+                  id={veld.key}
+                  value={instellingen[veld.key] as string}
+                  onChange={(e) =>
+                    setInstellingen((huidig) => ({ ...huidig, [veld.key]: e.target.value }))
+                  }
+                  className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
+                />
+              </div>
+            )
+          )}
         </div>
 
         <div className="rounded-lg border border-black/10 p-5 dark:border-white/10">
@@ -215,15 +225,11 @@ export default function InstellingenForm({
               <label className="mb-1 block text-sm font-medium" htmlFor="betalingstermijnDagen">
                 Betalingstermijn (dagen)
               </label>
-              <input
+              <NumberInput
                 id="betalingstermijnDagen"
-                type="number"
                 value={instellingen.betalingstermijnDagen}
-                onChange={(e) =>
-                  setInstellingen((huidig) => ({
-                    ...huidig,
-                    betalingstermijnDagen: parseInt(e.target.value, 10) || 0,
-                  }))
+                onChange={(waarde) =>
+                  setInstellingen((huidig) => ({ ...huidig, betalingstermijnDagen: waarde }))
                 }
                 className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
               />
@@ -235,16 +241,12 @@ export default function InstellingenForm({
               <label className="mb-1 block text-sm font-medium" htmlFor="voorrijkostenPerKm">
                 Voorrijkosten (€/km)
               </label>
-              <input
+              <NumberInput
                 id="voorrijkostenPerKm"
-                type="number"
                 step="0.01"
                 value={instellingen.voorrijkostenPerKm}
-                onChange={(e) =>
-                  setInstellingen((huidig) => ({
-                    ...huidig,
-                    voorrijkostenPerKm: parseFloat(e.target.value) || 0,
-                  }))
+                onChange={(waarde) =>
+                  setInstellingen((huidig) => ({ ...huidig, voorrijkostenPerKm: waarde }))
                 }
                 className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
               />
@@ -256,16 +258,12 @@ export default function InstellingenForm({
               <label className="mb-1 block text-sm font-medium" htmlFor="voorrijkostenGratisTotKm">
                 Gratis tot (km)
               </label>
-              <input
+              <NumberInput
                 id="voorrijkostenGratisTotKm"
-                type="number"
                 step="0.1"
                 value={instellingen.voorrijkostenGratisTotKm}
-                onChange={(e) =>
-                  setInstellingen((huidig) => ({
-                    ...huidig,
-                    voorrijkostenGratisTotKm: parseFloat(e.target.value) || 0,
-                  }))
+                onChange={(waarde) =>
+                  setInstellingen((huidig) => ({ ...huidig, voorrijkostenGratisTotKm: waarde }))
                 }
                 className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
               />

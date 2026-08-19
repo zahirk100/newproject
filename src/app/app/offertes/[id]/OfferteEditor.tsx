@@ -11,6 +11,7 @@ import {
 } from "@/lib/types";
 import { berekenTotalen, formatEuro, regelTotaal } from "@/lib/format";
 import AdresAutocomplete from "@/components/AdresAutocomplete";
+import NumberInput from "@/components/NumberInput";
 
 const STATUS_OPTIES: { waarde: OfferteStatus; label: string }[] = [
   { waarde: "aanvraag", label: "Aanvraag" },
@@ -322,14 +323,9 @@ export default function OfferteEditor({
                 </select>
               </td>
               <td className="py-2 pr-2">
-                <input
-                  type="number"
+                <NumberInput
                   value={regel.aantal}
-                  onChange={(e) =>
-                    updateRegel(regel.id, {
-                      aantal: parseFloat(e.target.value) || 0,
-                    })
-                  }
+                  onChange={(waarde) => updateRegel(regel.id, { aantal: waarde })}
                   className="w-full rounded-md border border-transparent bg-transparent px-2 py-1 hover:border-black/15 print:border-none print:p-0 dark:hover:border-white/20"
                 />
               </td>
@@ -343,15 +339,10 @@ export default function OfferteEditor({
                 />
               </td>
               <td className="py-2 pr-2">
-                <input
-                  type="number"
+                <NumberInput
                   step="0.01"
                   value={regel.prijsPerEenheid}
-                  onChange={(e) =>
-                    updateRegel(regel.id, {
-                      prijsPerEenheid: parseFloat(e.target.value) || 0,
-                    })
-                  }
+                  onChange={(waarde) => updateRegel(regel.id, { prijsPerEenheid: waarde })}
                   className="w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-right hover:border-black/15 print:border-none print:p-0 dark:hover:border-white/20"
                 />
               </td>
@@ -389,12 +380,9 @@ export default function OfferteEditor({
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-2 text-black/60 dark:text-white/60 print:text-black">
             BTW
-            <input
-              type="number"
+            <NumberInput
               value={offerte.btwPercentage}
-              onChange={(e) =>
-                updateVeld("btwPercentage", parseFloat(e.target.value) || 0)
-              }
+              onChange={(waarde) => updateVeld("btwPercentage", waarde)}
               className="w-14 rounded-md border border-black/15 bg-transparent px-1 py-0.5 text-right print:border-none dark:border-white/20"
             />
             %
