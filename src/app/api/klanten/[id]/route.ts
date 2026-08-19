@@ -1,21 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthedContext } from "@/lib/apiAuth";
-import { deleteOfferte, getOfferte, updateOfferte } from "@/lib/db";
-
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { supabase, user } = await getAuthedContext();
-  if (!user) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
-
-  const { id } = await params;
-  const offerte = await getOfferte(supabase, user.id, id);
-  if (!offerte) {
-    return NextResponse.json({ error: "Niet gevonden" }, { status: 404 });
-  }
-  return NextResponse.json(offerte);
-}
+import { deleteKlant, updateKlant } from "@/lib/db";
 
 export async function PUT(
   request: NextRequest,
@@ -26,8 +11,8 @@ export async function PUT(
 
   const { id } = await params;
   const body = await request.json();
-  const bijgewerkt = await updateOfferte(supabase, user.id, id, body);
-  return NextResponse.json(bijgewerkt);
+  const klant = await updateKlant(supabase, user.id, id, body);
+  return NextResponse.json(klant);
 }
 
 export async function DELETE(
@@ -38,6 +23,6 @@ export async function DELETE(
   if (!user) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
 
   const { id } = await params;
-  await deleteOfferte(supabase, user.id, id);
+  await deleteKlant(supabase, user.id, id);
   return NextResponse.json({ ok: true });
 }

@@ -14,8 +14,10 @@ export type OfferteStatus = "concept" | "verzonden" | "geaccepteerd" | "afgeweze
 export interface Offerte {
   id: string;
   offerteNummer: string;
+  klantId: string | null;
   klantnaam: string;
   klantadres: string;
+  klantEmail: string;
   klusOmschrijving: string;
   regels: OfferteRegel[];
   btwPercentage: number;
@@ -35,6 +37,8 @@ export interface Instellingen {
   telefoon: string;
   standaardUurtarief: number;
   standaardBtwPercentage: number;
+  logoUrl: string | null;
+  merkkleur: string;
 }
 
 export const DEFAULT_INSTELLINGEN: Instellingen = {
@@ -47,4 +51,15 @@ export const DEFAULT_INSTELLINGEN: Instellingen = {
   telefoon: "",
   standaardUurtarief: 55,
   standaardBtwPercentage: 21,
+  logoUrl: null,
+  merkkleur: "#111827",
 };
+
+export interface Klant {
+  id: string;
+  naam: string;
+  adres: string;
+  email: string;
+  telefoon: string;
+  createdAt: string;
+}

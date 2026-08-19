@@ -41,6 +41,9 @@ export default function OfferteEditor({
   const [opslaan, setOpslaan] = useState(false);
   const [verwijderen, setVerwijderen] = useState(false);
   const [opgeslagen, setOpgeslagen] = useState(false);
+  const [versturen, setVersturen] = useState(false);
+  const [verstuurFout, setVerstuurFout] = useState<string | null>(null);
+  const [verstuurd, setVerstuurd] = useState(false);
 
   const { subtotaal, btwBedrag, totaal } = berekenTotalen(
     offerte.regels,
@@ -98,7 +101,31 @@ export default function OfferteEditor({
     if (!confirm("Deze offerte definitief verwijderen?")) return;
     setVerwijderen(true);
     await fetch(`/api/offertes/${offerte.id}`, { method: "DELETE" });
-    router.push("/");
+    router.push("/app");
+  }
+
+  async function verstuurPerEmail() {
+    if (!offerte.klantEmail?.trim()) {
+      setVerstuurFout("Vul eerst een e-mailadres van de klant in.");
+      return;
+    }
+    setVersturen(true);
+    setVerstuurFout(null);
+    try {
+      await opslaanOfferte();
+      const response = await fetch(`/api/offertes/${offerte.id}/verstuur`, { method: "POST" });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || "Versturen mislukt");
+      }
+      const bijgewerkt = await response.json();
+      setOfferte(bijgewerkt);
+      setVerstuurd(true);
+    } catch (error) {
+      setVerstuurFout(error instanceof Error ? error.message : "Versturen mislukt");
+    } finally {
+      setVersturen(false);
+    }
   }
 
   return (
@@ -131,11 +158,24 @@ export default function OfferteEditor({
           >
             {opslaan ? "Opslaan…" : opgeslagen ? "Opgeslagen ✓" : "Opslaan"}
           </button>
+          <a
+            href={`/api/offertes/${offerte.id}/pdf`}
+            className="rounded-md border border-black/15 px-4 py-2 text-sm font-medium hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+          >
+            Download PDF
+          </a>
           <button
             onClick={() => window.print()}
             className="rounded-md border border-black/15 px-4 py-2 text-sm font-medium hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
           >
-            Print / Exporteer PDF
+            Print
+          </button>
+          <button
+            onClick={verstuurPerEmail}
+            disabled={versturen}
+            className="rounded-md border border-black/15 px-4 py-2 text-sm font-medium hover:bg-black/5 disabled:opacity-50 dark:border-white/20 dark:hover:bg-white/10"
+          >
+            {versturen ? "Versturen…" : verstuurd ? "Verzonden ✓" : "Verstuur per e-mail"}
           </button>
           <button
             onClick={verwijderOfferte}
@@ -150,6 +190,10 @@ export default function OfferteEditor({
       {/* Briefhoofd, ook zichtbaar bij printen */}
       <div className="mb-8 flex items-start justify-between border-b border-black/10 pb-6 dark:border-white/10 print:border-black">
         <div>
+          {instellingen.logoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={instellingen.logoUrl} alt="" className="mb-2 h-8 w-auto object-contain" />
+          )}
           <div className="text-lg font-semibold">{instellingen.bedrijfsnaam}</div>
           <div className="whitespace-pre-line text-sm text-black/60 dark:text-white/60 print:text-black">
             {instellingen.adres}
@@ -191,7 +235,23 @@ export default function OfferteEditor({
             className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm print:border-none print:p-0 dark:border-white/20"
           />
         </div>
+        <div className="print:hidden">
+          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-black/50">
+            E-mailadres klant
+          </label>
+          <input
+            type="email"
+            value={offerte.klantEmail}
+            onChange={(e) => updateVeld("klantEmail", e.target.value)}
+            className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
+            placeholder="klant@voorbeeld.nl"
+          />
+        </div>
       </div>
+
+      {verstuurFout && (
+        <p className="mb-6 text-sm text-red-600 print:hidden dark:text-red-400">{verstuurFout}</p>
+      )}
 
       <div className="mb-6">
         <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-black/50 print:hidden">
