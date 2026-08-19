@@ -139,7 +139,7 @@ export default function KlantenLijst({ initialeKlanten }: { initialeKlanten: Kla
             ) : (
               <li
                 key={klant.id}
-                className="flex items-center justify-between gap-4 px-5 py-4"
+                className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
               >
                 <div>
                   <div className="font-medium">{klant.naam}</div>

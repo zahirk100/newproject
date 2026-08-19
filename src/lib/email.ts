@@ -87,6 +87,29 @@ export async function verstuurFactuurEmail(
   });
 }
 
+export async function verstuurAanvraagBevestiging(
+  klantEmail: string,
+  klantnaam: string,
+  instellingen: Instellingen
+) {
+  if (!process.env.RESEND_API_KEY || !klantEmail?.trim()) return;
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  await resend.emails.send({
+    from: afzender(),
+    to: [klantEmail],
+    replyTo: instellingen.email || undefined,
+    subject: `We hebben je aanvraag ontvangen — ${instellingen.bedrijfsnaam}`,
+    html: `
+      <p>Beste ${klantnaam || "klant"},</p>
+      <p>Bedankt voor je aanvraag bij <strong>${instellingen.bedrijfsnaam}</strong>. We hebben 'm
+      in goede orde ontvangen en nemen 'm zo snel mogelijk in behandeling. Je ontvangt hierna een
+      offerte per e-mail.</p>
+      <p>Met vriendelijke groet,<br/>${instellingen.bedrijfsnaam}</p>
+    `,
+  });
+}
+
 export async function verstuurEigenaarNotificatie(
   instellingen: Instellingen,
   onderwerp: string,

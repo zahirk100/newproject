@@ -92,7 +92,7 @@ export default async function DashboardPage() {
             <li key={offerte.id}>
               <Link
                 href={`/app/offertes/${offerte.id}`}
-                className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-black/[0.03] dark:hover:bg-white/[0.04]"
+                className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 hover:bg-black/[0.03] dark:hover:bg-white/[0.04]"
               >
                 <div>
                   <div className="font-medium">

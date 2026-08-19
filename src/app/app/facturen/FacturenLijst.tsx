@@ -4,6 +4,26 @@ import { useState } from "react";
 import { Factuur } from "@/lib/types";
 import { berekenTotalen, formatEuro } from "@/lib/format";
 
+function statusBadge(factuur: Factuur) {
+  if (factuur.status === "betaald") {
+    return {
+      label: "Betaald",
+      klasse: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
+    };
+  }
+  const vervallen = new Date(factuur.vervaldatum) < new Date();
+  if (vervallen) {
+    return {
+      label: "Te laat",
+      klasse: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+    };
+  }
+  return {
+    label: "Open",
+    klasse: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
+  };
+}
+
 export default function FacturenLijst({ initieleFacturen }: { initieleFacturen: Factuur[] }) {
   const [facturen, setFacturen] = useState(initieleFacturen);
 
@@ -29,8 +49,12 @@ export default function FacturenLijst({ initieleFacturen }: { initieleFacturen: 
     <ul className="divide-y divide-black/10 rounded-lg border border-black/10 dark:divide-white/10 dark:border-white/10">
       {facturen.map((factuur) => {
         const { totaal } = berekenTotalen(factuur.regels, factuur.btwPercentage);
+        const badge = statusBadge(factuur);
         return (
-          <li key={factuur.id} className="flex items-center justify-between gap-4 px-5 py-4">
+          <li
+            key={factuur.id}
+            className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
+          >
             <div>
               <div className="font-medium">
                 {factuur.klantnaam || "Naamloze klant"}{" "}
@@ -42,17 +66,17 @@ export default function FacturenLijst({ initieleFacturen }: { initieleFacturen: 
                 Vervaldatum {new Date(factuur.vervaldatum).toLocaleDateString("nl-NL")}
               </div>
             </div>
-            <div className="flex shrink-0 items-center gap-4">
-              <span
-                className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                  factuur.status === "betaald"
-                    ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                    : "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300"
-                }`}
-              >
-                {factuur.status === "betaald" ? "Betaald" : "Open"}
+            <div className="flex flex-wrap items-center gap-3">
+              <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${badge.klasse}`}>
+                {badge.label}
               </span>
-              <span className="w-24 text-right text-sm font-medium">{formatEuro(totaal)}</span>
+              <span className="text-right text-sm font-medium">{formatEuro(totaal)}</span>
+              <a
+                href={`/api/facturen/${factuur.id}/pdf`}
+                className="text-sm font-medium text-black/60 hover:text-black dark:text-white/60 dark:hover:text-white"
+              >
+                PDF
+              </a>
               {factuur.status === "open" && (
                 <button
                   onClick={() => markeerAlsBetaald(factuur.id)}
