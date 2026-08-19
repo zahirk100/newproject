@@ -41,7 +41,13 @@ export async function genereerOfferteRegels(
           "Je zet een korte klusomschrijving om in een realistische offerteregels-lijst met materiaal- en arbeidsposten, " +
           "in het Nederlands, met marktconforme Nederlandse prijzen (EUR, excl. btw). " +
           `Het standaard uurtarief van dit bedrijf is €${instellingen.standaardUurtarief} per uur; gebruik dat voor arbeidsregels tenzij de klus duidelijk ander werk vraagt. ` +
-          "Splits materiaal en arbeid in aparte regels. Wees realistisch met aantallen en eenheden (bijv. 'uur', 'stuk', 'm', 'm2').",
+          "Splits materiaal en arbeid in aparte regels. Wees realistisch met aantallen en eenheden (bijv. 'uur', 'stuk', 'm', 'm2'). " +
+          "Belangrijk: verzin geen specifieke merken, producttypes of exacte details die niet uit de klusomschrijving of de " +
+          "bedrijfsinstructies hieronder blijken — gebruik dan een neutrale, algemene omschrijving (bijv. 'cv-ketel' i.p.v. een " +
+          "verzonnen merk/model). Wees terughoudend en realistisch met prijzen; noem geen valse precisie of details die je niet weet." +
+          (instellingen.extraInstructies?.trim()
+            ? `\n\nBedrijfsspecifieke instructies (altijd toepassen waar relevant): ${instellingen.extraInstructies.trim()}`
+            : ""),
         messages: [
           {
             role: "user",

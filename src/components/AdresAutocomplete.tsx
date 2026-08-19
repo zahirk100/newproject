@@ -23,6 +23,10 @@ export default function AdresAutocomplete({
   const [suggesties, setSuggesties] = useState<Suggestie[]>([]);
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  // Alleen suggesties ophalen/tonen als de gebruiker zelf typt — niet bij
+  // een vooraf ingevulde waarde (bijv. bij het openen van een bestaande
+  // klant of offerte).
+  const getypDoorGebruiker = useRef(false);
 
   useEffect(() => {
     function buitenKlik(event: MouseEvent) {
@@ -35,6 +39,7 @@ export default function AdresAutocomplete({
   }, []);
 
   useEffect(() => {
+    if (!getypDoorGebruiker.current) return;
     const timer = setTimeout(async () => {
       if (value.trim().length < 4) {
         setSuggesties([]);
@@ -64,7 +69,10 @@ export default function AdresAutocomplete({
       <input
         id={id}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          getypDoorGebruiker.current = true;
+          onChange(e.target.value);
+        }}
         onFocus={() => suggesties.length > 0 && setOpen(true)}
         placeholder={placeholder}
         autoComplete="off"

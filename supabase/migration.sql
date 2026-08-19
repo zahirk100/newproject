@@ -17,8 +17,12 @@ create table if not exists public.profiles (
   standaard_btw_percentage numeric not null default 21,
   logo_url text,
   merkkleur text not null default '#111827',
+  extra_instructies text not null default '',
   created_at timestamptz not null default now()
 );
+
+-- Idempotent: voegt extra_instructies toe als de tabel al bestond
+alter table public.profiles add column if not exists extra_instructies text not null default '';
 
 alter table public.profiles enable row level security;
 

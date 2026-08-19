@@ -16,6 +16,7 @@ function rowToInstellingen(row: Row): Instellingen {
     standaardBtwPercentage: Number(row.standaard_btw_percentage ?? 21),
     logoUrl: (row.logo_url as string | null) ?? null,
     merkkleur: (row.merkkleur as string) ?? "#111827",
+    extraInstructies: (row.extra_instructies as string) ?? "",
   };
 }
 
@@ -34,6 +35,8 @@ function instellingenToRow(instellingen: Partial<Instellingen>): Row {
     row.standaard_btw_percentage = instellingen.standaardBtwPercentage;
   if (instellingen.logoUrl !== undefined) row.logo_url = instellingen.logoUrl;
   if (instellingen.merkkleur !== undefined) row.merkkleur = instellingen.merkkleur;
+  if (instellingen.extraInstructies !== undefined)
+    row.extra_instructies = instellingen.extraInstructies;
   return row;
 }
 

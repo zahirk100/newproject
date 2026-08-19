@@ -16,6 +16,7 @@ function rijNaarInstellingen(row: Row): Instellingen {
     standaardBtwPercentage: Number(row.standaard_btw_percentage ?? 21),
     logoUrl: (row.logo_url as string | null) ?? null,
     merkkleur: (row.merkkleur as string) ?? "#111827",
+    extraInstructies: (row.extra_instructies as string) ?? "",
   };
 }
 
