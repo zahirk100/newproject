@@ -137,6 +137,8 @@ export async function verstuurPlanningVoorstelEmail(
       <p>Beste ${offerte.klantnaam || "klant"},</p>
       <p><strong>${instellingen.bedrijfsnaam}</strong> stelt voor om de klus in te plannen op:</p>
       <p style="font-size:16px"><strong>${formatteerDatumTijd(offerte.planningDatum)}</strong></p>
+      <p><strong>Werkzaamheden:</strong> ${offerte.klusOmschrijving}</p>
+      ${offerte.klantadres ? `<p><strong>Adres:</strong> ${offerte.klantadres}</p>` : ""}
       ${offerte.planningNotitie ? `<p>${offerte.planningNotitie}</p>` : ""}
       <p style="margin:24px 0">
         <a href="${portaalUrl}" style="background:#111827;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;display:inline-block">
@@ -162,6 +164,8 @@ export async function verstuurPlanningBevestigdEmail(offerte: Offerte, instellin
       <p>Beste ${offerte.klantnaam || "klant"},</p>
       <p>De afspraak is bevestigd op:</p>
       <p style="font-size:16px"><strong>${formatteerDatumTijd(offerte.planningDatum)}</strong></p>
+      <p><strong>Werkzaamheden:</strong> ${offerte.klusOmschrijving}</p>
+      ${offerte.klantadres ? `<p><strong>Adres:</strong> ${offerte.klantadres}</p>` : ""}
       <p>Tot dan!</p>
       <p>Met vriendelijke groet,<br/>${instellingen.bedrijfsnaam}</p>
     `,

@@ -18,11 +18,15 @@ export default function PlanningSectie({
   planningStatus,
   planningDatum,
   planningNotitie,
+  klusOmschrijving,
+  klantadres,
 }: {
   offerteId: string;
   planningStatus: PlanningStatus | null;
   planningDatum: string | null;
   planningNotitie: string;
+  klusOmschrijving: string;
+  klantadres: string;
 }) {
   const [status, setStatus] = useState(planningStatus);
   const [huidigeDatum, setHuidigeDatum] = useState(planningDatum);
@@ -65,6 +69,15 @@ export default function PlanningSectie({
   return (
     <div className="mt-6 rounded-md border border-black/10 p-4 dark:border-white/10">
       <h2 className="mb-2 text-sm font-semibold">Afspraak</h2>
+      <p className="mb-3 text-sm text-black/60 dark:text-white/60">
+        <strong className="text-black dark:text-white">Werkzaamheden:</strong> {klusOmschrijving}
+        {klantadres && (
+          <>
+            <br />
+            <strong className="text-black dark:text-white">Adres:</strong> {klantadres}
+          </>
+        )}
+      </p>
 
       {status === "bevestigd" && huidigeDatum && (
         <p className="text-sm">

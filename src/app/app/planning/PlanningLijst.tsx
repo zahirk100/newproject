@@ -116,6 +116,14 @@ export default function PlanningLijst({ initieleOffertes }: { initieleOffertes: 
               ) : (
                 <div className="text-sm text-black/60 dark:text-white/60">Nog geen voorstel</div>
               )}
+              <div className="mt-1 line-clamp-1 text-sm text-black/60 dark:text-white/60">
+                {offerte.klusOmschrijving}
+              </div>
+              {offerte.klantadres && (
+                <div className="text-sm text-black/40 dark:text-white/40">
+                  📍 {offerte.klantadres}
+                </div>
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {offerte.planningStatus && (
