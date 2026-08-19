@@ -50,8 +50,25 @@ export default async function PubliekeOffertePagina({
           <div className="mb-1 text-xs font-medium uppercase tracking-wide text-black/50">
             Klusomschrijving
           </div>
-          <p className="text-sm text-black/80 dark:text-white/80">{offerte.klusOmschrijving}</p>
+          <p className="whitespace-pre-line text-sm text-black/80 dark:text-white/80">
+            {offerte.klusOmschrijving}
+          </p>
         </div>
+
+        {offerte.fotoUrls.length > 0 && (
+          <div className="mb-6 flex flex-wrap gap-2">
+            {offerte.fotoUrls.map((url) => (
+              <a key={url} href={url} target="_blank" rel="noreferrer">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={url}
+                  alt=""
+                  className="h-20 w-20 rounded-md border border-black/10 object-cover dark:border-white/10"
+                />
+              </a>
+            ))}
+          </div>
+        )}
 
         <div className="mb-2 overflow-x-auto">
         <table className="w-full min-w-[420px] border-collapse text-sm">

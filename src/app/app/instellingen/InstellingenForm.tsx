@@ -51,7 +51,10 @@ export default function InstellingenForm({
       const response = await fetch("/api/instellingen", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(instellingen),
+        body: JSON.stringify({
+          ...instellingen,
+          standaardVragen: instellingen.standaardVragen.map((v) => v.trim()).filter(Boolean),
+        }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -301,6 +304,61 @@ export default function InstellingenForm({
             className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
             placeholder="Bijv. Wij geven altijd 2 jaar garantie op arbeid. Voor cv-ketels gebruiken wij standaard Intergas. Offertes zijn 30 dagen geldig. Voeg bij loodgieterswerk altijd een aparte regel 'afvoerkosten oud materiaal' toe."
           />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium">
+            Vaste vragen aan de klant
+          </label>
+          <p className="mb-2 text-xs text-black/50 dark:text-white/50">
+            Onderwerpen die je bij (bijna) elke aanvraag wilt weten, bijv. &quot;Hoeveel m2?&quot;
+            of &quot;Wat voor type dak?&quot;. Op het aanvraagformulier bepaalt de AI aan de hand
+            hiervan en de klusomschrijving welke vragen nog gesteld moeten worden.
+          </p>
+          <div className="space-y-2">
+            {instellingen.standaardVragen.map((vraag, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <input
+                  value={vraag}
+                  onChange={(e) =>
+                    setInstellingen((huidig) => ({
+                      ...huidig,
+                      standaardVragen: huidig.standaardVragen.map((v, i) =>
+                        i === index ? e.target.value : v
+                      ),
+                    }))
+                  }
+                  className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
+                  placeholder="Bijv. Hoeveel m2 moet er geschilderd worden?"
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setInstellingen((huidig) => ({
+                      ...huidig,
+                      standaardVragen: huidig.standaardVragen.filter((_, i) => i !== index),
+                    }))
+                  }
+                  className="shrink-0 text-black/40 hover:text-red-600 dark:text-white/40"
+                  aria-label="Vraag verwijderen"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              setInstellingen((huidig) => ({
+                ...huidig,
+                standaardVragen: [...huidig.standaardVragen, ""],
+              }))
+            }
+            className="mt-2 text-sm font-medium text-black/60 hover:text-black dark:text-white/60 dark:hover:text-white"
+          >
+            + Vraag toevoegen
+          </button>
         </div>
 
         {opslaanFout && (

@@ -294,10 +294,30 @@ export default function OfferteEditor({
         <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-black/50 print:hidden">
           Klusomschrijving
         </label>
-        <p className="text-sm text-black/80 dark:text-white/80 print:text-black">
+        <p className="whitespace-pre-line text-sm text-black/80 dark:text-white/80 print:text-black">
           {offerte.klusOmschrijving}
         </p>
       </div>
+
+      {offerte.fotoUrls.length > 0 && (
+        <div className="mb-6 print:hidden">
+          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-black/50">
+            Foto&apos;s van de klant
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {offerte.fotoUrls.map((url) => (
+              <a key={url} href={url} target="_blank" rel="noreferrer">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={url}
+                  alt=""
+                  className="h-20 w-20 rounded-md border border-black/10 object-cover dark:border-white/10"
+                />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       {voorrijkostenOntbreken && (
         <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 print:hidden dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">

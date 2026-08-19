@@ -42,6 +42,15 @@ export default async function AanvraagPagina({
           Vul je gegevens en de klus in — {instellingen.bedrijfsnaam || "wij"} nemen zo snel
           mogelijk contact met je op met een offerte.
         </p>
+        {instellingen.voorrijkostenPerKm > 0 && (
+          <p className="mb-6 rounded-md bg-neutral-50 px-3 py-2 text-xs text-black/60 dark:bg-neutral-800 dark:text-white/60">
+            Voorrijkosten:{" "}
+            {instellingen.voorrijkostenGratisTotKm > 0
+              ? `de eerste ${instellingen.voorrijkostenGratisTotKm} km zijn gratis, daarna`
+              : "vanaf de eerste kilometer"}{" "}
+            rekenen wij €{instellingen.voorrijkostenPerKm.toFixed(2)} per km.
+          </p>
+        )}
         <AanvraagFormulier profileId={profileId} />
       </div>
     </div>
