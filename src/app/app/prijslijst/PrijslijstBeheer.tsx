@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PrijslijstItem, RegelType } from "@/lib/types";
 import { formatEuro } from "@/lib/format";
+import NumberInput from "@/components/NumberInput";
 
 function leegFormulier(): { naam: string; type: RegelType; eenheid: string; prijs: number } {
   return { naam: "", type: "materiaal", eenheid: "stuk", prijs: 0 };
@@ -16,6 +17,7 @@ export default function PrijslijstBeheer({
   const [items, setItems] = useState(initieleItems);
   const [nieuw, setNieuw] = useState(leegFormulier());
   const [bezig, setBezig] = useState(false);
+  const [formulierVersie, setFormulierVersie] = useState(0);
 
   async function toevoegen(event: React.FormEvent) {
     event.preventDefault();
@@ -29,6 +31,7 @@ export default function PrijslijstBeheer({
     const item = await response.json();
     setItems((huidig) => [...huidig, item].sort((a, b) => a.naam.localeCompare(b.naam)));
     setNieuw(leegFormulier());
+    setFormulierVersie((v) => v + 1);
     setBezig(false);
   }
 
@@ -67,12 +70,12 @@ export default function PrijslijstBeheer({
           onChange={(e) => setNieuw((h) => ({ ...h, eenheid: e.target.value }))}
           className="rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
         />
-        <input
-          type="number"
+        <NumberInput
+          key={formulierVersie}
           step="0.01"
           placeholder="Prijs"
-          value={nieuw.prijs || ""}
-          onChange={(e) => setNieuw((h) => ({ ...h, prijs: parseFloat(e.target.value) || 0 }))}
+          value={nieuw.prijs}
+          onChange={(waarde) => setNieuw((h) => ({ ...h, prijs: waarde }))}
           className="rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
         />
         <button
