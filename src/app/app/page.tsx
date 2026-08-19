@@ -94,16 +94,24 @@ export default async function DashboardPage() {
                 href={`/app/offertes/${offerte.id}`}
                 className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 hover:bg-black/[0.03] dark:hover:bg-white/[0.04]"
               >
-                <div>
+                <div className="min-w-0">
                   <div className="font-medium">
                     {offerte.klantnaam || "Naamloze klant"}{" "}
                     <span className="text-black/40 dark:text-white/40">
                       · {offerte.offerteNummer}
                     </span>
                   </div>
-                  <div className="line-clamp-1 text-sm text-black/60 dark:text-white/60">
+                  <div className="line-clamp-2 whitespace-pre-line text-sm text-black/60 dark:text-white/60">
                     {offerte.klusOmschrijving}
                   </div>
+                  {offerte.fotoUrls.length > 0 && (
+                    <div className="mt-1 flex items-center gap-1 text-xs text-black/50 dark:text-white/50">
+                      <span>📷</span>
+                      <span>
+                        {offerte.fotoUrls.length} foto{offerte.fotoUrls.length > 1 ? "'s" : ""}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="flex shrink-0 items-center gap-4">
                   <span
