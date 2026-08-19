@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Offerte } from "@/lib/types";
 
 export default function AanvragenInbox({ aanvragen: initieleAanvragen }: { aanvragen: Offerte[] }) {
@@ -39,8 +40,10 @@ export default function AanvragenInbox({ aanvragen: initieleAanvragen }: { aanvr
     <ul className="divide-y divide-black/10 rounded-lg border border-purple-200 bg-purple-50/50 dark:divide-white/10 dark:border-purple-900 dark:bg-purple-950/20">
       {aanvragen.map((aanvraag) => (
         <li key={aanvraag.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-          <div>
-            <div className="font-medium">{aanvraag.klantnaam || "Naamloze aanvraag"}</div>
+          <Link href={`/app/aanvragen/${aanvraag.id}`} className="min-w-0 flex-1">
+            <div className="font-medium hover:underline">
+              {aanvraag.klantnaam || "Naamloze aanvraag"}
+            </div>
             <div className="line-clamp-2 whitespace-pre-line text-sm text-black/60 dark:text-white/60">
               {aanvraag.klusOmschrijving}
             </div>
@@ -62,7 +65,7 @@ export default function AanvragenInbox({ aanvragen: initieleAanvragen }: { aanvr
                 )}
               </div>
             )}
-          </div>
+          </Link>
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => negeren(aanvraag.id)}
