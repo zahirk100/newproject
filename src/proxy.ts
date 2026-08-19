@@ -9,6 +9,8 @@ function isPubliekPad(pathname: string) {
   if (pathname.startsWith("/auth/")) return true;
   if (pathname.startsWith("/offerte/")) return true;
   if (pathname.startsWith("/api/offerte/")) return true;
+  if (pathname.startsWith("/aanvraag/")) return true;
+  if (pathname === "/api/aanvraag") return true;
   return false;
 }
 

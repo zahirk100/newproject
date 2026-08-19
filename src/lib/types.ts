@@ -9,7 +9,12 @@ export interface OfferteRegel {
   prijsPerEenheid: number;
 }
 
-export type OfferteStatus = "concept" | "verzonden" | "geaccepteerd" | "afgewezen";
+export type OfferteStatus =
+  | "aanvraag"
+  | "concept"
+  | "verzonden"
+  | "geaccepteerd"
+  | "afgewezen";
 
 export interface Offerte {
   id: string;

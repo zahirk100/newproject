@@ -2,10 +2,12 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { listOffertes } from "@/lib/db";
 import { berekenTotalen, formatEuro } from "@/lib/format";
+import AanvragenInbox from "./AanvragenInbox";
 
 export const dynamic = "force-dynamic";
 
 const STATUS_LABEL: Record<string, string> = {
+  aanvraag: "Aanvraag",
   concept: "Concept",
   verzonden: "Verzonden",
   geaccepteerd: "Geaccepteerd",
@@ -13,6 +15,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_KLASSE: Record<string, string> = {
+  aanvraag: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
   concept: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
   verzonden: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
   geaccepteerd: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
@@ -24,7 +27,10 @@ export default async function DashboardPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const offertes = user ? await listOffertes(supabase, user.id) : [];
+  const alleOffertes = user ? await listOffertes(supabase, user.id) : [];
+
+  const aanvragen = alleOffertes.filter((o) => o.status === "aanvraag");
+  const offertes = alleOffertes.filter((o) => o.status !== "aanvraag");
 
   const totalen = offertes.map((o) => berekenTotalen(o.regels, o.btwPercentage));
   const omzet = offertes.reduce(
@@ -54,6 +60,15 @@ export default async function DashboardPage() {
           + Nieuwe offerte
         </Link>
       </div>
+
+      {aanvragen.length > 0 && (
+        <div className="mb-8">
+          <h2 className="mb-3 text-sm font-medium text-black/50 dark:text-white/50">
+            Nieuwe aanvragen ({aanvragen.length})
+          </h2>
+          <AanvragenInbox aanvragen={aanvragen} />
+        </div>
+      )}
 
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatTile label="Omzet geaccepteerd" waarde={formatEuro(omzet)} />

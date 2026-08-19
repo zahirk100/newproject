@@ -13,6 +13,7 @@ import { berekenTotalen, formatEuro, regelTotaal } from "@/lib/format";
 import AdresAutocomplete from "@/components/AdresAutocomplete";
 
 const STATUS_OPTIES: { waarde: OfferteStatus; label: string }[] = [
+  { waarde: "aanvraag", label: "Aanvraag" },
   { waarde: "concept", label: "Concept" },
   { waarde: "verzonden", label: "Verzonden" },
   { waarde: "geaccepteerd", label: "Geaccepteerd" },
