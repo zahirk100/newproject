@@ -20,8 +20,8 @@ export default async function PubliekeOffertePagina({
   const { subtotaal, btwBedrag, totaal } = berekenTotalen(offerte.regels, offerte.btwPercentage);
 
   return (
-    <div className="min-h-screen bg-neutral-50 px-6 py-10 dark:bg-neutral-950">
-      <div className="mx-auto max-w-2xl rounded-xl border border-black/10 bg-white p-8 shadow-sm dark:border-white/10 dark:bg-neutral-900">
+    <div className="min-h-screen bg-neutral-50 px-4 py-6 sm:px-6 sm:py-10 dark:bg-neutral-950">
+      <div className="mx-auto max-w-2xl rounded-xl border border-black/10 bg-white p-5 shadow-sm sm:p-8 dark:border-white/10 dark:bg-neutral-900">
         <div className="mb-8 flex items-start justify-between border-b border-black/10 pb-6 dark:border-white/10">
           <div>
             {instellingen.logoUrl && (
@@ -52,7 +52,8 @@ export default async function PubliekeOffertePagina({
           <p className="text-sm text-black/80 dark:text-white/80">{offerte.klusOmschrijving}</p>
         </div>
 
-        <table className="mb-2 w-full border-collapse text-sm">
+        <div className="mb-2 overflow-x-auto">
+        <table className="w-full min-w-[420px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-black/10 text-left text-xs uppercase tracking-wide text-black/50 dark:border-white/10">
               <th className="py-2 pr-2">Omschrijving</th>
@@ -74,6 +75,7 @@ export default async function PubliekeOffertePagina({
             ))}
           </tbody>
         </table>
+        </div>
 
         <div className="ml-auto mb-8 w-56 space-y-1 text-sm">
           <div className="flex justify-between">
