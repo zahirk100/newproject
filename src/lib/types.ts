@@ -44,6 +44,7 @@ export interface Instellingen {
   standaardBtwPercentage: number;
   logoUrl: string | null;
   merkkleur: string;
+  extraInstructies: string;
 }
 
 export const DEFAULT_INSTELLINGEN: Instellingen = {
@@ -58,6 +59,7 @@ export const DEFAULT_INSTELLINGEN: Instellingen = {
   standaardBtwPercentage: 21,
   logoUrl: null,
   merkkleur: "#111827",
+  extraInstructies: "",
 };
 
 export interface Klant {

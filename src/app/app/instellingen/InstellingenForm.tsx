@@ -6,7 +6,6 @@ import { createClient } from "@/lib/supabase/client";
 import AdresAutocomplete from "@/components/AdresAutocomplete";
 
 const VELDEN: { key: keyof Instellingen; label: string; type?: string }[] = [
-  { key: "bedrijfsnaam", label: "Bedrijfsnaam" },
   { key: "kvkNummer", label: "KvK-nummer" },
   { key: "btwNummer", label: "BTW-nummer" },
   { key: "iban", label: "IBAN" },
@@ -162,6 +161,19 @@ export default function InstellingenForm({
 
         <div className="space-y-4">
           <div>
+            <label className="mb-1 block text-sm font-medium" htmlFor="bedrijfsnaam">
+              Bedrijfsnaam
+            </label>
+            <input
+              id="bedrijfsnaam"
+              value={instellingen.bedrijfsnaam}
+              onChange={(e) =>
+                setInstellingen((huidig) => ({ ...huidig, bedrijfsnaam: e.target.value }))
+              }
+              className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
+            />
+          </div>
+          <div>
             <label className="mb-1 block text-sm font-medium" htmlFor="adres">
               Adres
             </label>
@@ -194,6 +206,27 @@ export default function InstellingenForm({
               />
             </div>
           ))}
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium" htmlFor="extraInstructies">
+            Standaardinstructies voor de AI
+          </label>
+          <p className="mb-2 text-xs text-black/50 dark:text-white/50">
+            Dingen die de AI altijd moet meenemen bij het opstellen van een offerte: vaste
+            voorwaarden, merken/materialen die je gebruikt, garantietermijn, geldigheidsduur,
+            enz. Hoe specifieker, hoe minder de AI zelf hoeft te gokken.
+          </p>
+          <textarea
+            id="extraInstructies"
+            rows={4}
+            value={instellingen.extraInstructies}
+            onChange={(e) =>
+              setInstellingen((huidig) => ({ ...huidig, extraInstructies: e.target.value }))
+            }
+            className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
+            placeholder="Bijv. Wij geven altijd 2 jaar garantie op arbeid. Voor cv-ketels gebruiken wij standaard Intergas. Offertes zijn 30 dagen geldig. Voeg bij loodgieterswerk altijd een aparte regel 'afvoerkosten oud materiaal' toe."
+          />
         </div>
 
         <button
