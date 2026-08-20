@@ -155,6 +155,7 @@ export default function AanvraagFormulier({ profileId }: { profileId: string }) 
             id="adres"
             value={adres}
             onChange={setAdres}
+            required
             className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
           />
         </div>
@@ -178,6 +179,7 @@ export default function AanvraagFormulier({ profileId }: { profileId: string }) 
             </label>
             <input
               id="telefoon"
+              required
               value={telefoon}
               onChange={(e) => setTelefoon(e.target.value)}
               className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
