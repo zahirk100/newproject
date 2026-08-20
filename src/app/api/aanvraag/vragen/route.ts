@@ -22,6 +22,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Onbekend bedrijf" }, { status: 404 });
   }
 
-  const vragen = await bepaalOntbrekendeVragen(klusOmschrijving.trim(), instellingen.standaardVragen);
-  return NextResponse.json({ vragen });
+  const { vragen, fout } = await bepaalOntbrekendeVragen(
+    klusOmschrijving.trim(),
+    instellingen.standaardVragen
+  );
+  return NextResponse.json({ vragen, fout });
 }
