@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Logo from "@/components/Logo";
 
 export default function RegistrerenPage() {
   const router = useRouter();
@@ -63,8 +64,8 @@ export default function RegistrerenPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-6 dark:bg-neutral-950">
       <div className="w-full max-w-sm">
-        <Link href="/" className="mb-8 block text-center text-lg font-semibold tracking-tight">
-          OfferteFlits
+        <Link href="/" className="mb-8 flex justify-center">
+          <Logo />
         </Link>
         <div className="rounded-xl border border-black/10 bg-white p-8 shadow-sm dark:border-white/10 dark:bg-neutral-900">
           <h1 className="mb-6 text-xl font-semibold">Registreer je bedrijf</h1>
