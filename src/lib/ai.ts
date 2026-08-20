@@ -96,8 +96,12 @@ export async function genereerOfferteRegels(
 export async function bepaalOntbrekendeVragen(
   klusOmschrijving: string,
   standaardVragen: string[]
-): Promise<string[]> {
-  if (!process.env.ANTHROPIC_API_KEY || !klusOmschrijving.trim()) return [];
+): Promise<{ vragen: string[]; fout: string | null }> {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.error("bepaalOntbrekendeVragen: ANTHROPIC_API_KEY ontbreekt");
+    return { vragen: [], fout: "ANTHROPIC_API_KEY ontbreekt op de server." };
+  }
+  if (!klusOmschrijving.trim()) return { vragen: [], fout: null };
 
   try {
     const client = new Anthropic();
@@ -125,10 +129,20 @@ export async function bepaalOntbrekendeVragen(
       },
     });
 
-    return response.parsed_output?.vragen.slice(0, 4) ?? [];
+    if (!response.parsed_output) {
+      console.error(
+        "bepaalOntbrekendeVragen: geen parsed_output, stop_reason:",
+        response.stop_reason
+      );
+      return { vragen: [], fout: `Geen antwoord van AI (stop_reason: ${response.stop_reason}).` };
+    }
+    return { vragen: response.parsed_output.vragen.slice(0, 4), fout: null };
   } catch (error) {
     console.error("Bepalen van ontbrekende vragen mislukt:", error);
-    return [];
+    return {
+      vragen: [],
+      fout: error instanceof Error ? error.message : "Onbekende fout bij AI-aanroep.",
+    };
   }
 }
 

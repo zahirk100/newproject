@@ -19,6 +19,7 @@ export default function AanvraagFormulier({ profileId }: { profileId: string }) 
   const [telefoon, setTelefoon] = useState("");
   const [klusOmschrijving, setKlusOmschrijving] = useState("");
   const [vragen, setVragen] = useState<string[]>([]);
+  const [vragenFout, setVragenFout] = useState<string | null>(null);
   const [antwoorden, setAntwoorden] = useState<Record<number, string>>({});
   const [vragenLaden, setVragenLaden] = useState(false);
   const [fotos, setFotos] = useState<FotoMetFoto[]>([]);
@@ -36,6 +37,7 @@ export default function AanvraagFormulier({ profileId }: { profileId: string }) 
   async function volgende(event: React.FormEvent) {
     event.preventDefault();
     setFout(null);
+    setVragenFout(null);
     setVragenLaden(true);
     try {
       const response = await fetch("/api/aanvraag/vragen", {
@@ -45,8 +47,12 @@ export default function AanvraagFormulier({ profileId }: { profileId: string }) 
       });
       const data = await response.json().catch(() => ({}));
       setVragen(response.ok && Array.isArray(data.vragen) ? data.vragen : []);
-    } catch {
+      if (!response.ok || data.fout) {
+        setVragenFout(data.fout || data.error || "Onbekende fout bij ophalen van vervolgvragen.");
+      }
+    } catch (error) {
       setVragen([]);
+      setVragenFout(error instanceof Error ? error.message : "Ophalen van vervolgvragen mislukt.");
     } finally {
       setVragenLaden(false);
       setStap(2);
@@ -224,6 +230,12 @@ export default function AanvraagFormulier({ profileId }: { profileId: string }) 
             </div>
           ))}
         </div>
+      )}
+
+      {vragenFout && (
+        <p className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+          Vervolgvragen konden niet worden bepaald ({vragenFout}). Je kunt gewoon doorgaan.
+        </p>
       )}
 
       <div>
