@@ -52,10 +52,16 @@ export default function RegistrerenPage() {
       <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-6 text-center dark:bg-neutral-950">
         <div className="max-w-sm">
           <h1 className="mb-2 text-xl font-semibold">Check je inbox</h1>
-          <p className="text-sm text-black/60 dark:text-white/60">
+          <p className="mb-6 text-sm text-black/60 dark:text-white/60">
             We hebben een bevestigingsmail gestuurd naar <strong>{email}</strong>. Klik op de
-            link daarin om je account te activeren en in te loggen.
+            link daarin om je account te activeren. Daarna kun je inloggen.
           </p>
+          <Link
+            href="/login"
+            className="inline-block rounded-md border border-black/15 px-4 py-2 text-sm font-medium hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+          >
+            Naar inloggen
+          </Link>
         </div>
       </div>
     );
