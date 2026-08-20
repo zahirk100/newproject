@@ -1,0 +1,321 @@
+"use client";
+
+import { useState } from "react";
+import { Lead, LeadStatus } from "@/lib/types";
+
+const STATUS_LABEL: Record<LeadStatus, string> = {
+  nieuw: "Nieuw",
+  geen_email: "Geen e-mail gevonden",
+  klaar: "Klaar om te versturen",
+  verzonden: "Verzonden",
+  afgemeld: "Afgemeld",
+  bounced: "Bounced",
+};
+
+const STATUS_KLASSE: Record<LeadStatus, string> = {
+  nieuw: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
+  geen_email: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+  klaar: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
+  verzonden: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
+  afgemeld: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+  bounced: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+};
+
+const FILTERS: { waarde: LeadStatus | "alle"; label: string }[] = [
+  { waarde: "alle", label: "Alle" },
+  { waarde: "nieuw", label: "Nieuw" },
+  { waarde: "klaar", label: "Klaar" },
+  { waarde: "verzonden", label: "Verzonden" },
+  { waarde: "geen_email", label: "Geen e-mail" },
+  { waarde: "afgemeld", label: "Afgemeld" },
+];
+
+export default function LeadsBeheer({ initieleLeads }: { initieleLeads: Lead[] }) {
+  const [leads, setLeads] = useState(initieleLeads);
+  const [vakgebied, setVakgebied] = useState("");
+  const [plaats, setPlaats] = useState("");
+  const [zoekBezig, setZoekBezig] = useState(false);
+  const [zoekMelding, setZoekMelding] = useState<string | null>(null);
+  const [filter, setFilter] = useState<LeadStatus | "alle">("nieuw");
+  const [uitgeklapt, setUitgeklapt] = useState<string | null>(null);
+  const [bezigId, setBezigId] = useState<string | null>(null);
+  const [verstuurMelding, setVerstuurMelding] = useState<string | null>(null);
+  const [verstuurBezig, setVerstuurBezig] = useState(false);
+
+  const zichtbareLeads = filter === "alle" ? leads : leads.filter((l) => l.status === filter);
+  const klaarAantal = leads.filter((l) => l.status === "klaar").length;
+
+  async function zoeken(event: React.FormEvent) {
+    event.preventDefault();
+    setZoekBezig(true);
+    setZoekMelding(null);
+    try {
+      const response = await fetch("/api/admin/leads/scrape", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ vakgebied, plaats }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Zoeken mislukt");
+      setLeads((huidig) => [...(data.leads as Lead[]), ...huidig]);
+      setZoekMelding(
+        `${data.gevonden} gevonden, ${data.nieuw} nieuw toegevoegd, ${data.overgeslagen} al bekend.`
+      );
+      setFilter("nieuw");
+    } catch (error) {
+      setZoekMelding(error instanceof Error ? error.message : "Zoeken mislukt");
+    } finally {
+      setZoekBezig(false);
+    }
+  }
+
+  async function genereerConcept(id: string) {
+    setBezigId(id);
+    try {
+      const response = await fetch(`/api/admin/leads/${id}`, { method: "POST" });
+      if (!response.ok) throw new Error();
+      const bijgewerkt = await response.json();
+      setLeads((huidig) => huidig.map((l) => (l.id === id ? bijgewerkt : l)));
+      setUitgeklapt(id);
+    } finally {
+      setBezigId(null);
+    }
+  }
+
+  async function opslaan(lead: Lead, patch: Partial<Lead>) {
+    setBezigId(lead.id);
+    try {
+      const response = await fetch(`/api/admin/leads/${lead.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+      if (!response.ok) throw new Error();
+      const bijgewerkt = await response.json();
+      setLeads((huidig) => huidig.map((l) => (l.id === lead.id ? bijgewerkt : l)));
+    } finally {
+      setBezigId(null);
+    }
+  }
+
+  async function verwijderen(id: string) {
+    if (!confirm("Deze lead verwijderen?")) return;
+    setBezigId(id);
+    try {
+      const response = await fetch(`/api/admin/leads/${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error();
+      setLeads((huidig) => huidig.filter((l) => l.id !== id));
+    } finally {
+      setBezigId(null);
+    }
+  }
+
+  async function verstuurBatch() {
+    setVerstuurBezig(true);
+    setVerstuurMelding(null);
+    try {
+      const response = await fetch("/api/admin/leads/versturen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ aantal: 25 }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Versturen mislukt");
+      setVerstuurMelding(`${data.verzonden} verzonden, ${data.mislukt} mislukt.`);
+      // De route geeft geen bijgewerkte lijst terug — we markeren optimistisch
+      // de eerste `verzonden` leads met status 'klaar' als verstuurd.
+      setLeads((huidig) => {
+        let over = data.verzonden as number;
+        return huidig.map((l) => {
+          if (l.status === "klaar" && over > 0) {
+            over--;
+            return { ...l, status: "verzonden" as LeadStatus };
+          }
+          return l;
+        });
+      });
+    } catch (error) {
+      setVerstuurMelding(error instanceof Error ? error.message : "Versturen mislukt");
+    } finally {
+      setVerstuurBezig(false);
+    }
+  }
+
+  return (
+    <div className="space-y-8">
+      <form
+        onSubmit={zoeken}
+        className="flex flex-wrap items-end gap-3 rounded-lg border border-black/10 p-4 dark:border-white/10"
+      >
+        <div>
+          <label className="mb-1 block text-xs font-medium text-black/50">Vakgebied</label>
+          <input
+            value={vakgebied}
+            onChange={(e) => setVakgebied(e.target.value)}
+            placeholder="Bijv. loodgieter"
+            className="rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-black/50">Plaats</label>
+          <input
+            value={plaats}
+            onChange={(e) => setPlaats(e.target.value)}
+            placeholder="Bijv. Utrecht"
+            className="rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={zoekBezig || !vakgebied.trim() || !plaats.trim()}
+          className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-white/80"
+        >
+          {zoekBezig ? "Zoeken…" : "Zoek nieuwe leads"}
+        </button>
+        {zoekMelding && <p className="text-sm text-black/60 dark:text-white/60">{zoekMelding}</p>}
+      </form>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-black/10 p-4 dark:border-white/10">
+        <p className="text-sm text-black/60 dark:text-white/60">
+          {klaarAantal} lead(s) klaar om te versturen.
+        </p>
+        <div className="flex items-center gap-3">
+          {verstuurMelding && (
+            <p className="text-sm text-black/60 dark:text-white/60">{verstuurMelding}</p>
+          )}
+          <button
+            onClick={verstuurBatch}
+            disabled={verstuurBezig || klaarAantal === 0}
+            className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-white/80"
+          >
+            {verstuurBezig ? "Versturen…" : "Verstuur volgende batch (max 25)"}
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {FILTERS.map((f) => (
+          <button
+            key={f.waarde}
+            onClick={() => setFilter(f.waarde)}
+            className={`rounded-full px-3 py-1.5 text-xs font-medium ${
+              filter === f.waarde
+                ? "bg-black text-white dark:bg-white dark:text-black"
+                : "bg-black/5 text-black/60 hover:bg-black/10 dark:bg-white/10 dark:text-white/60"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {zichtbareLeads.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-black/15 p-10 text-center text-sm text-black/60 dark:border-white/15 dark:text-white/60">
+          Geen leads in deze filter.
+        </div>
+      ) : (
+        <ul className="divide-y divide-black/10 rounded-lg border border-black/10 dark:divide-white/10 dark:border-white/10">
+          {zichtbareLeads.map((lead) => (
+            <li key={lead.id} className="px-5 py-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="font-medium">{lead.bedrijfsnaam || "Naamloos"}</div>
+                  <div className="text-sm text-black/60 dark:text-white/60">
+                    {lead.vakgebied} · {lead.plaats}
+                    {lead.email ? ` · ${lead.email}` : " · geen e-mail"}
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_KLASSE[lead.status]}`}
+                  >
+                    {STATUS_LABEL[lead.status]}
+                  </span>
+                  {lead.email && lead.status !== "verzonden" && lead.status !== "afgemeld" && (
+                    <button
+                      onClick={() =>
+                        uitgeklapt === lead.id ? setUitgeklapt(null) : genereerConcept(lead.id)
+                      }
+                      disabled={bezigId === lead.id}
+                      className="rounded-md border border-black/15 px-3 py-1.5 text-sm font-medium hover:bg-black/5 disabled:opacity-50 dark:border-white/20 dark:hover:bg-white/10"
+                    >
+                      {uitgeklapt === lead.id ? "Sluiten" : lead.emailTekst ? "Bekijk concept" : "Genereer concept"}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => verwijderen(lead.id)}
+                    disabled={bezigId === lead.id}
+                    className="rounded-md px-3 py-1.5 text-sm font-medium text-black/50 hover:bg-black/5 disabled:opacity-50 dark:text-white/50 dark:hover:bg-white/10"
+                  >
+                    Verwijderen
+                  </button>
+                </div>
+              </div>
+
+              {uitgeklapt === lead.id && lead.emailTekst && (
+                <LeadConceptEditor
+                  lead={lead}
+                  bezig={bezigId === lead.id}
+                  onOpslaan={(patch) => opslaan(lead, patch)}
+                />
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function LeadConceptEditor({
+  lead,
+  bezig,
+  onOpslaan,
+}: {
+  lead: Lead;
+  bezig: boolean;
+  onOpslaan: (patch: Partial<Lead>) => void;
+}) {
+  const [onderwerp, setOnderwerp] = useState(lead.emailOnderwerp);
+  const [tekst, setTekst] = useState(lead.emailTekst);
+
+  return (
+    <div className="mt-4 space-y-3 rounded-md border border-black/10 p-4 dark:border-white/10">
+      <div>
+        <label className="mb-1 block text-xs font-medium text-black/50">Onderwerp</label>
+        <input
+          value={onderwerp}
+          onChange={(e) => setOnderwerp(e.target.value)}
+          className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
+        />
+      </div>
+      <div>
+        <label className="mb-1 block text-xs font-medium text-black/50">Tekst</label>
+        <textarea
+          rows={8}
+          value={tekst}
+          onChange={(e) => setTekst(e.target.value)}
+          className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
+        />
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() =>
+            onOpslaan({ emailOnderwerp: onderwerp, emailTekst: tekst, status: "klaar" })
+          }
+          disabled={bezig || !onderwerp.trim() || !tekst.trim()}
+          className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-white/80"
+        >
+          {bezig ? "Bezig…" : "Keur goed (klaar om te versturen)"}
+        </button>
+        <button
+          onClick={() => onOpslaan({ emailOnderwerp: onderwerp, emailTekst: tekst })}
+          disabled={bezig}
+          className="rounded-md border border-black/15 px-4 py-2 text-sm font-medium hover:bg-black/5 disabled:opacity-50 dark:border-white/20 dark:hover:bg-white/10"
+        >
+          Alleen opslaan
+        </button>
+      </div>
+    </div>
+  );
+}

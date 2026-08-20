@@ -16,6 +16,8 @@ const LINKS = [
   { href: "/app/instellingen", label: "Instellingen", icon: "⚙️" },
 ];
 
+const ADMIN_LINK = { href: "/app/leads", label: "Leads", icon: "🎯" };
+
 function Logo({
   bedrijfsnaam,
   logoUrl,
@@ -49,10 +51,19 @@ function Logo({
   );
 }
 
-function NavLinks({ pathname, onNavigeer }: { pathname: string; onNavigeer?: () => void }) {
+function NavLinks({
+  pathname,
+  isAdmin,
+  onNavigeer,
+}: {
+  pathname: string;
+  isAdmin: boolean;
+  onNavigeer?: () => void;
+}) {
+  const links = isAdmin ? [...LINKS, ADMIN_LINK] : LINKS;
   return (
     <nav className="flex-1 space-y-1 px-3 py-4">
-      {LINKS.map((link) => {
+      {links.map((link) => {
         const actief =
           link.href === "/app" ? pathname === "/app" : pathname.startsWith(link.href);
         return (
@@ -79,10 +90,12 @@ export default function AppSidebar({
   bedrijfsnaam,
   logoUrl,
   merkkleur,
+  isAdmin = false,
 }: {
   bedrijfsnaam: string;
   logoUrl: string | null;
   merkkleur: string;
+  isAdmin?: boolean;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -128,7 +141,7 @@ export default function AppSidebar({
                 ✕
               </button>
             </div>
-            <NavLinks pathname={pathname} onNavigeer={() => setMobielOpen(false)} />
+            <NavLinks pathname={pathname} isAdmin={isAdmin} onNavigeer={() => setMobielOpen(false)} />
             <div className="border-t border-black/10 px-3 py-4 dark:border-white/10">
               <button
                 onClick={logUit}
@@ -146,7 +159,7 @@ export default function AppSidebar({
         <div className="border-b border-black/10 px-5 py-5 dark:border-white/10">
           <Logo bedrijfsnaam={bedrijfsnaam} logoUrl={logoUrl} merkkleur={merkkleur} />
         </div>
-        <NavLinks pathname={pathname} />
+        <NavLinks pathname={pathname} isAdmin={isAdmin} />
         <div className="border-t border-black/10 px-3 py-4 dark:border-white/10">
           <button
             onClick={logUit}
