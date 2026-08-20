@@ -20,7 +20,11 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [wachtwoord, setWachtwoord] = useState("");
   const [bezig, setBezig] = useState(false);
-  const [fout, setFout] = useState<string | null>(null);
+  const [fout, setFout] = useState<string | null>(
+    searchParams.get("fout") === "verificatie-mislukt"
+      ? "Bevestigen van je account is mislukt. Vraag een nieuwe bevestigingsmail aan of probeer opnieuw te registreren."
+      : null
+  );
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
