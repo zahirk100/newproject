@@ -13,12 +13,14 @@ export default function AdresAutocomplete({
   onChange,
   placeholder,
   className,
+  required,
 }: {
   id?: string;
   value: string;
   onChange: (waarde: string) => void;
   placeholder?: string;
   className?: string;
+  required?: boolean;
 }) {
   const [suggesties, setSuggesties] = useState<Suggestie[]>([]);
   const [open, setOpen] = useState(false);
@@ -76,6 +78,7 @@ export default function AdresAutocomplete({
         onFocus={() => suggesties.length > 0 && setOpen(true)}
         placeholder={placeholder}
         autoComplete="off"
+        required={required}
         className={className}
       />
       {open && (
