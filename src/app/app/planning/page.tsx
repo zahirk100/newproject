@@ -17,7 +17,7 @@ export default async function PlanningPagina() {
       <h1 className="mb-2 text-2xl font-semibold">Planning</h1>
       <p className="mb-8 text-sm text-black/60 dark:text-white/60">
         Stel een datum voor bij een geaccepteerde offerte. De klant kan akkoord gaan of een
-        andere datum voorstellen — jij beslist uiteindelijk welke datum definitief wordt.
+        andere datum voorstellen, maar jij beslist uiteindelijk welke datum definitief wordt.
       </p>
       <PlanningLijst initieleOffertes={teplannen} />
     </div>
