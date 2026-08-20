@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getInstellingen } from "@/lib/db";
+import { isAdmin } from "@/lib/admin";
 import AppSidebar from "@/components/AppSidebar";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -13,7 +14,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect("/login");
   }
 
-  const instellingen = await getInstellingen(supabase, user.id);
+  const [instellingen, admin] = await Promise.all([
+    getInstellingen(supabase, user.id),
+    isAdmin(supabase, user.id),
+  ]);
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
@@ -21,6 +25,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         bedrijfsnaam={instellingen.bedrijfsnaam}
         logoUrl={instellingen.logoUrl}
         merkkleur={instellingen.merkkleur}
+        isAdmin={admin}
       />
       <div className="min-w-0 flex-1">{children}</div>
     </div>

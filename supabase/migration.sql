@@ -30,6 +30,7 @@ alter table public.profiles add column if not exists betalingstermijn_dagen inte
 alter table public.profiles add column if not exists voorrijkosten_per_km numeric not null default 0;
 alter table public.profiles add column if not exists voorrijkosten_gratis_tot_km numeric not null default 0;
 alter table public.profiles add column if not exists standaard_vragen text[] not null default '{}';
+alter table public.profiles add column if not exists is_admin boolean not null default false;
 
 alter table public.profiles enable row level security;
 
@@ -213,3 +214,37 @@ drop policy if exists "aanvraag-fotos: iedereen mag uploaden (publiek formulier)
 create policy "aanvraag-fotos: iedereen mag uploaden (publiek formulier)"
   on storage.objects for insert
   with check (bucket_id = 'aanvraag-fotos');
+
+-- ─── leads: interne acquisitietool voor de platformeigenaar (niet per bedrijf) ──
+-- Geen multi-tenant RLS zoals de rest van het schema — dit is geen klantdata
+-- van een ondernemer, maar de eigen prospectlijst van OfferteFlits zelf.
+-- Alleen toegankelijk voor profielen met is_admin = true.
+create table if not exists public.leads (
+  id uuid primary key default gen_random_uuid(),
+  bedrijfsnaam text not null default '',
+  vakgebied text not null default '',
+  plaats text not null default '',
+  adres text not null default '',
+  website text,
+  email text,
+  telefoon text,
+  bron text not null default 'google_places',
+  status text not null default 'nieuw'
+    check (status in ('nieuw', 'geen_email', 'klaar', 'verzonden', 'afgemeld', 'bounced')),
+  email_onderwerp text not null default '',
+  email_tekst text not null default '',
+  verzonden_op timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.leads enable row level security;
+
+drop policy if exists "leads: alleen admin" on public.leads;
+create policy "leads: alleen admin" on public.leads
+  for all
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin))
+  with check (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin));
+
+create index if not exists leads_status_idx on public.leads (status);
+create unique index if not exists leads_website_idx on public.leads (website) where website is not null;

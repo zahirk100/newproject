@@ -96,6 +96,26 @@ export interface PrijslijstItem {
   createdAt: string;
 }
 
+export type LeadStatus = "nieuw" | "geen_email" | "klaar" | "verzonden" | "afgemeld" | "bounced";
+
+export interface Lead {
+  id: string;
+  bedrijfsnaam: string;
+  vakgebied: string;
+  plaats: string;
+  adres: string;
+  website: string | null;
+  email: string | null;
+  telefoon: string | null;
+  bron: string;
+  status: LeadStatus;
+  emailOnderwerp: string;
+  emailTekst: string;
+  verzondenOp: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type FactuurStatus = "open" | "betaald";
 
 export interface Factuur {
