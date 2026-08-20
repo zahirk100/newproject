@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OfferteFlits — offertes maken met AI",
+  title: "OfferteFlits: offertes maken met AI",
   description: "Genereer razendsnel offertes voor vakbedrijven met AI.",
 };
 
