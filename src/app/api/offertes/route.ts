@@ -11,6 +11,10 @@ import {
 import { genereerOfferteRegels } from "@/lib/ai";
 import { berekenVoorrijkostenRegel } from "@/lib/geocode";
 
+// Zonder dit kan Vercel's standaard (korte) functietimeout de AI-aanroep
+// in POST afbreken voordat Claude klaar is.
+export const maxDuration = 30;
+
 export async function GET() {
   const { supabase, user } = await getAuthedContext();
   if (!user) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });

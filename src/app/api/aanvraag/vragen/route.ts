@@ -3,6 +3,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getInstellingen } from "@/lib/db";
 import { bepaalOntbrekendeVragen } from "@/lib/ai";
 
+// Zonder dit kan Vercel's standaard (korte) functietimeout de AI-aanroep
+// afbreken voordat Claude klaar is, wat als een niet-JSON platformfout
+// naar de klant terugkomt in plaats van een nette foutmelding.
+export const maxDuration = 30;
+
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const { profileId, klusOmschrijving } = body as {
