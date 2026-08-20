@@ -39,7 +39,7 @@ export default async function AanvraagPagina({
         </div>
         <h1 className="mb-2 text-xl font-semibold">Offerte aanvragen</h1>
         <p className="mb-6 text-sm text-black/60 dark:text-white/60">
-          Vul je gegevens en de klus in — {instellingen.bedrijfsnaam || "wij"} nemen zo snel
+          Vul je gegevens en de klus in, dan neemt {instellingen.bedrijfsnaam || "wij"} zo snel
           mogelijk contact met je op met een offerte.
         </p>
         {instellingen.voorrijkostenPerKm > 0 && (

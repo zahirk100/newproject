@@ -99,7 +99,7 @@ export async function verstuurAanvraagBevestiging(
     from: afzender(),
     to: [klantEmail],
     replyTo: instellingen.email || undefined,
-    subject: `We hebben je aanvraag ontvangen — ${instellingen.bedrijfsnaam}`,
+    subject: `We hebben je aanvraag ontvangen bij ${instellingen.bedrijfsnaam}`,
     html: `
       <p>Beste ${klantnaam || "klant"},</p>
       <p>Bedankt voor je aanvraag bij <strong>${instellingen.bedrijfsnaam}</strong>. We hebben 'm
@@ -132,7 +132,7 @@ export async function verstuurPlanningVoorstelEmail(
     from: afzender(),
     to: [offerte.klantEmail],
     replyTo: instellingen.email || undefined,
-    subject: `Voorstel voor je afspraak — ${instellingen.bedrijfsnaam}`,
+    subject: `Voorstel voor je afspraak bij ${instellingen.bedrijfsnaam}`,
     html: `
       <p>Beste ${offerte.klantnaam || "klant"},</p>
       <p><strong>${instellingen.bedrijfsnaam}</strong> stelt voor om de klus in te plannen op:</p>
@@ -159,7 +159,7 @@ export async function verstuurPlanningBevestigdEmail(offerte: Offerte, instellin
     from: afzender(),
     to: [offerte.klantEmail],
     replyTo: instellingen.email || undefined,
-    subject: `Afspraak bevestigd — ${instellingen.bedrijfsnaam}`,
+    subject: `Afspraak bevestigd bij ${instellingen.bedrijfsnaam}`,
     html: `
       <p>Beste ${offerte.klantnaam || "klant"},</p>
       <p>De afspraak is bevestigd op:</p>
@@ -202,7 +202,7 @@ export function standaardOutreachTekst(lead: Lead, appUrl: string): { onderwerp:
 
 Ik zag dat jullie actief zijn als ${vak} in ${lead.plaats}.
 
-Ik bouw OfferteFlits: een tool waarmee vakbedrijven binnen een minuut een offerte opstellen (AI zet een klantomschrijving om in offerteregels), die de klant vervolgens online kan goedkeuren — inclusief automatische facturatie en planning van de klus.
+Ik bouw OfferteFlits: een tool waarmee vakbedrijven binnen een minuut een offerte opstellen (AI zet een klantomschrijving om in offerteregels), die de klant vervolgens online kan goedkeuren, inclusief automatische facturatie en planning van de klus.
 
 Benieuwd of dit iets voor jullie is? Je kunt 'm gratis en vrijblijvend bekijken: ${appUrl}
 

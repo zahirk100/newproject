@@ -47,8 +47,8 @@ export async function POST(
   const { instellingen } = gegevens;
   const onderwerp =
     actie === "akkoord"
-      ? `Klant is akkoord met de afspraak — ${bijgewerkt.offerteNummer}`
-      : `Klant stelt een andere datum voor — ${bijgewerkt.offerteNummer}`;
+      ? `Klant is akkoord met de afspraak (${bijgewerkt.offerteNummer})`
+      : `Klant stelt een andere datum voor (${bijgewerkt.offerteNummer})`;
   const datumTekst = bijgewerkt.planningDatum ? formatteerDatumTijd(bijgewerkt.planningDatum) : "";
   const tekst =
     actie === "akkoord"
