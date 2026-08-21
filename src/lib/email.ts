@@ -248,6 +248,7 @@ export async function verstuurOutreachEmail(lead: Lead, unsubscribeUrl: string) 
   const { error } = await resend.emails.send({
     from: afzender(),
     to: [lead.email],
+    replyTo: process.env.OUTREACH_REPLY_TO || undefined,
     subject: lead.emailOnderwerp,
     html: `
       <div style="white-space:pre-line">${lead.emailTekst}</div>
