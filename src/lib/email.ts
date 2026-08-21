@@ -188,6 +188,18 @@ export async function verstuurEigenaarNotificatie(
   });
 }
 
+/** Verwijdert emoji/symbolen die soms in Google Maps-bedrijfsnamen staan. */
+function opschonenNaam(naam: string): string {
+  return naam
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function hoofdletter(tekst: string): string {
+  return tekst.replace(/\b\p{L}/gu, (letter) => letter.toUpperCase());
+}
+
 /**
  * Standaard concepttekst voor koude acquisitiemail naar een lead. Bewust
  * geen AI-gegenereerde tekst per lead — voorspelbaar, controleerbaar en de
@@ -195,16 +207,24 @@ export async function verstuurEigenaarNotificatie(
  */
 export function standaardOutreachTekst(lead: Lead, appUrl: string): { onderwerp: string; tekst: string } {
   const vak = lead.vakgebied || "vakbedrijf";
-  const naam = lead.bedrijfsnaam || "daar";
+  const plaats = hoofdletter(lead.plaats || "");
+  const naam = opschonenNaam(lead.bedrijfsnaam) || "daar";
   return {
-    onderwerp: `Sneller offertes maken als ${vak} in ${lead.plaats}?`,
+    onderwerp: `Offertes maken in 1 minuut in plaats van een avond`,
     tekst: `Hoi ${naam},
 
-Ik zag dat jullie actief zijn als ${vak} in ${lead.plaats}.
+Herkenbaar? Een klant vraagt een prijsopgave, en 's avonds ben je nog bezig met een offerte in Word of Excel in elkaar te zetten.
 
-Ik bouw OfferteFlits: een tool waarmee vakbedrijven binnen een minuut een offerte opstellen (AI zet een klantomschrijving om in offerteregels), die de klant vervolgens online kan goedkeuren, inclusief automatische facturatie en planning van de klus.
+Met OfferteFlits typ je alleen een korte omschrijving van de klus. Binnen een minuut staat er een compleet offerteconcept klaar, met materiaal- en arbeidsregels. Jij controleert 'm, past aan wat nodig is, en verstuurt.
 
-Benieuwd of dit iets voor jullie is? Je kunt 'm gratis en vrijblijvend bekijken: ${appUrl}
+Ook wat daarna gebeurt, gaat vanzelf:
+- de klant keurt de offerte online goed, geen gedoe met handtekeningen
+- zodra die akkoord is, gaat de factuur automatisch de deur uit
+- en samen plannen jullie de klus meteen in het systeem in
+
+Als ${vak} in ${plaats} is OfferteFlits voor jou volledig gratis te gebruiken: alle functies, geen creditcard nodig, geen addertjes onder het gras.
+
+Benieuwd? Bekijk het hier: ${appUrl}
 
 Met vriendelijke groet,
 Team OfferteFlits`,
