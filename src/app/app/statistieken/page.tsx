@@ -24,6 +24,10 @@ export default async function StatistiekenPagina() {
   if (!user || !(await isAdmin(supabase, user.id))) notFound();
 
   const stats = await getPlatformStats();
+  const openRate =
+    stats.outreachVerzonden > 0
+      ? Math.round((stats.outreachGeopend / stats.outreachVerzonden) * 100)
+      : 0;
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10 sm:px-8">
@@ -56,6 +60,18 @@ export default async function StatistiekenPagina() {
           waarde={String(stats.offertesGeaccepteerd)}
           toelichting="Klant heeft online goedgekeurd"
         />
+      </div>
+
+      <h2 className="mb-3 text-lg font-semibold">Outreach-mails</h2>
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatKaart label="Verzonden" waarde={String(stats.outreachVerzonden)} />
+        <StatKaart
+          label="Geopend"
+          waarde={`${stats.outreachGeopend} (${openRate}%)`}
+          toelichting="Open rate t.o.v. verzonden"
+        />
+        <StatKaart label="Doorgeklikt" waarde={String(stats.outreachGeklikt)} />
+        <StatKaart label="Afgemeld" waarde={String(stats.outreachAfgemeld)} />
       </div>
 
       <div className="rounded-lg border border-black/10 dark:border-white/10">

@@ -17,6 +17,7 @@ function isPubliekPad(pathname: string) {
   if (pathname === "/icon" || pathname === "/apple-icon" || pathname === "/opengraph-image")
     return true;
   if (pathname.startsWith("/api/cron/")) return true;
+  if (pathname.startsWith("/api/webhooks/")) return true;
   return false;
 }
 

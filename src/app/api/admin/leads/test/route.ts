@@ -36,6 +36,9 @@ export async function POST(request: NextRequest) {
     emailOnderwerp: "",
     emailTekst: "",
     verzondenOp: null,
+    resendEmailId: null,
+    geopendOp: null,
+    geklikOp: null,
     createdAt: nu,
     updatedAt: nu,
   };

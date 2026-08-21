@@ -249,6 +249,14 @@ create policy "leads: alleen admin" on public.leads
 create index if not exists leads_status_idx on public.leads (status);
 create unique index if not exists leads_website_idx on public.leads (website) where website is not null;
 
+-- Idempotent: velden voor het bijhouden van open/klik-tracking via de
+-- Resend-webhook (zie /api/webhooks/resend)
+alter table public.leads add column if not exists resend_email_id text;
+alter table public.leads add column if not exists geopend_op timestamptz;
+alter table public.leads add column if not exists geklikt_op timestamptz;
+create index if not exists leads_resend_email_id_idx on public.leads (resend_email_id)
+  where resend_email_id is not null;
+
 -- ─── leads_planning: instellingen voor het automatisch dagelijks versturen ──
 -- Eén vaste rij (singleton), net als leads alleen voor is_admin-profielen.
 create table if not exists public.leads_planning (

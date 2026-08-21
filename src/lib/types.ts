@@ -112,6 +112,9 @@ export interface Lead {
   emailOnderwerp: string;
   emailTekst: string;
   verzondenOp: string | null;
+  resendEmailId: string | null;
+  geopendOp: string | null;
+  geklikOp: string | null;
   createdAt: string;
   updatedAt: string;
 }

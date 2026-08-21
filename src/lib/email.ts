@@ -236,7 +236,10 @@ Team OfferteFlits`,
  * (wettelijk vereist voor commerciële e-mail). Gooit een fout bij falen —
  * de aanroeper telt zelf hoeveel er echt verstuurd zijn.
  */
-export async function verstuurOutreachEmail(lead: Lead, unsubscribeUrl: string) {
+export async function verstuurOutreachEmail(
+  lead: Lead,
+  unsubscribeUrl: string
+): Promise<string | null> {
   if (!process.env.RESEND_API_KEY) {
     throw new Error("RESEND_API_KEY ontbreekt — e-mail versturen is niet geconfigureerd.");
   }
@@ -245,7 +248,7 @@ export async function verstuurOutreachEmail(lead: Lead, unsubscribeUrl: string) 
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const { error } = await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: afzender(),
     to: [lead.email],
     replyTo: process.env.OUTREACH_REPLY_TO || undefined,
@@ -264,4 +267,6 @@ export async function verstuurOutreachEmail(lead: Lead, unsubscribeUrl: string) 
   if (error) {
     throw new Error(`Versturen van e-mail mislukt: ${error.message}`);
   }
+
+  return data?.id ?? null;
 }
