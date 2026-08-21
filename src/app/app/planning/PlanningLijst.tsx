@@ -146,6 +146,15 @@ export default function PlanningLijst({ initieleOffertes }: { initieleOffertes: 
                 </button>
               )}
 
+              {(offerte.planningStatus === "bevestigd" || offerte.planningStatus === "afgerond") && (
+                <a
+                  href={`/api/offertes/${offerte.id}/werkbon`}
+                  className="rounded-md border border-black/15 px-3 py-2 text-sm font-medium hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+                >
+                  Download werkbon
+                </a>
+              )}
+
               {offerte.planningStatus === "bevestigd" && (
                 <button
                   onClick={() => markeerAfgerond(offerte.id)}
