@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { Lead, LeadStatus } from "./types";
+import { verstuurOutreachEmail } from "./email";
 
 type Row = Record<string, unknown>;
 
@@ -113,4 +114,36 @@ export async function updateLead(
 export async function deleteLead(supabase: SupabaseClient, id: string): Promise<void> {
   const { error } = await supabase.from("leads").delete().eq("id", id);
   if (error) throw new Error(`Verwijderen van lead mislukt: ${error.message}`);
+}
+
+/**
+ * Verstuurt de eerstvolgende `aantal` klaarstaande leads. Gedeeld door de
+ * handmatige verstuurknop en de dagelijkse cron, zodat beide dezelfde
+ * verzendlogica en foutafhandeling gebruiken.
+ */
+export async function verstuurKlaarstaandeLeads(
+  supabase: SupabaseClient,
+  appUrl: string,
+  aantal: number
+): Promise<{ verzonden: number; mislukt: number; totaal: number }> {
+  const klaarstaand = (await listLeads(supabase, "klaar")).slice(0, aantal);
+
+  let verzonden = 0;
+  let mislukt = 0;
+
+  for (const lead of klaarstaand) {
+    const unsubscribeUrl = `${appUrl}/uitschrijven/${lead.id}`;
+    try {
+      await verstuurOutreachEmail(lead, unsubscribeUrl);
+      await updateLead(supabase, lead.id, {
+        status: "verzonden",
+        verzondenOp: new Date().toISOString(),
+      });
+      verzonden++;
+    } catch {
+      mislukt++;
+    }
+  }
+
+  return { verzonden, mislukt, totaal: klaarstaand.length };
 }

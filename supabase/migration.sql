@@ -248,3 +248,24 @@ create policy "leads: alleen admin" on public.leads
 
 create index if not exists leads_status_idx on public.leads (status);
 create unique index if not exists leads_website_idx on public.leads (website) where website is not null;
+
+-- ─── leads_planning: instellingen voor het automatisch dagelijks versturen ──
+-- Eén vaste rij (singleton), net als leads alleen voor is_admin-profielen.
+create table if not exists public.leads_planning (
+  id boolean primary key default true,
+  actief boolean not null default false,
+  dagelijkse_limiet int not null default 25,
+  laatst_verzonden_op date,
+  updated_at timestamptz not null default now(),
+  constraint leads_planning_singleton check (id)
+);
+
+insert into public.leads_planning (id) values (true) on conflict (id) do nothing;
+
+alter table public.leads_planning enable row level security;
+
+drop policy if exists "leads_planning: alleen admin" on public.leads_planning;
+create policy "leads_planning: alleen admin" on public.leads_planning
+  for all
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin))
+  with check (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin));
