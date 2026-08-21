@@ -8,6 +8,10 @@ export interface PlatformStats {
   totaalOffertes: number;
   offertesGeaccepteerd: number;
   recenteRegistraties: { bedrijfsnaam: string; createdAt: string }[];
+  outreachVerzonden: number;
+  outreachGeopend: number;
+  outreachGeklikt: number;
+  outreachAfgemeld: number;
 }
 
 /**
@@ -31,6 +35,10 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     { count: offertesGeaccepteerd },
     { data: offerteProfielen },
     { data: recent },
+    { count: outreachVerzonden },
+    { count: outreachGeopend },
+    { count: outreachGeklikt },
+    { count: outreachAfgemeld },
   ] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }),
     supabase.from("profiles").select("id", { count: "exact", head: true }).gte("created_at", sinds7),
@@ -46,6 +54,10 @@ export async function getPlatformStats(): Promise<PlatformStats> {
       .select("bedrijfsnaam, created_at")
       .order("created_at", { ascending: false })
       .limit(10),
+    supabase.from("leads").select("id", { count: "exact", head: true }).not("verzonden_op", "is", null),
+    supabase.from("leads").select("id", { count: "exact", head: true }).not("geopend_op", "is", null),
+    supabase.from("leads").select("id", { count: "exact", head: true }).not("geklikt_op", "is", null),
+    supabase.from("leads").select("id", { count: "exact", head: true }).eq("status", "afgemeld"),
   ]);
 
   const actieveAccounts = new Set((offerteProfielen ?? []).map((r) => r.profile_id as string)).size;
@@ -61,5 +73,9 @@ export async function getPlatformStats(): Promise<PlatformStats> {
       bedrijfsnaam: (r.bedrijfsnaam as string) || "Naamloos",
       createdAt: r.created_at as string,
     })),
+    outreachVerzonden: outreachVerzonden ?? 0,
+    outreachGeopend: outreachGeopend ?? 0,
+    outreachGeklikt: outreachGeklikt ?? 0,
+    outreachAfgemeld: outreachAfgemeld ?? 0,
   };
 }

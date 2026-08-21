@@ -470,6 +470,14 @@ export default function LeadsBeheer({
                   >
                     {STATUS_LABEL[lead.status]}
                   </span>
+                  {lead.geopendOp && (
+                    <span
+                      className="rounded-full bg-teal-100 px-2.5 py-1 text-xs font-medium text-teal-700 dark:bg-teal-900 dark:text-teal-300"
+                      title={`Geopend op ${new Date(lead.geopendOp).toLocaleString("nl-NL")}`}
+                    >
+                      Geopend
+                    </span>
+                  )}
                   {lead.email && lead.status !== "verzonden" && lead.status !== "afgemeld" && (
                     <button
                       onClick={() =>

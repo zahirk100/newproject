@@ -19,6 +19,9 @@ function rowToLead(row: Row): Lead {
     emailOnderwerp: (row.email_onderwerp as string) ?? "",
     emailTekst: (row.email_tekst as string) ?? "",
     verzondenOp: (row.verzonden_op as string | null) ?? null,
+    resendEmailId: (row.resend_email_id as string | null) ?? null,
+    geopendOp: (row.geopend_op as string | null) ?? null,
+    geklikOp: (row.geklikt_op as string | null) ?? null,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   };
@@ -34,6 +37,19 @@ export async function listLeads(supabase: SupabaseClient, status?: LeadStatus): 
 
 export async function getLead(supabase: SupabaseClient, id: string): Promise<Lead | undefined> {
   const { data, error } = await supabase.from("leads").select("*").eq("id", id).maybeSingle();
+  if (error) throw new Error(`Kon lead niet laden: ${error.message}`);
+  return data ? rowToLead(data) : undefined;
+}
+
+export async function getLeadByResendId(
+  supabase: SupabaseClient,
+  resendEmailId: string
+): Promise<Lead | undefined> {
+  const { data, error } = await supabase
+    .from("leads")
+    .select("*")
+    .eq("resend_email_id", resendEmailId)
+    .maybeSingle();
   if (error) throw new Error(`Kon lead niet laden: ${error.message}`);
   return data ? rowToLead(data) : undefined;
 }
@@ -105,6 +121,9 @@ export async function updateLead(
   if (patch.emailTekst !== undefined) row.email_tekst = patch.emailTekst;
   if (patch.status !== undefined) row.status = patch.status;
   if (patch.verzondenOp !== undefined) row.verzonden_op = patch.verzondenOp;
+  if (patch.resendEmailId !== undefined) row.resend_email_id = patch.resendEmailId;
+  if (patch.geopendOp !== undefined) row.geopend_op = patch.geopendOp;
+  if (patch.geklikOp !== undefined) row.geklikt_op = patch.geklikOp;
 
   const { data, error } = await supabase.from("leads").update(row).eq("id", id).select().single();
   if (error || !data) throw new Error(`Bijwerken van lead mislukt: ${error?.message}`);
@@ -170,10 +189,11 @@ export async function verstuurKlaarstaandeLeads(
   for (const lead of klaarstaand) {
     const unsubscribeUrl = `${appUrl}/uitschrijven/${lead.id}`;
     try {
-      await verstuurOutreachEmail(lead, unsubscribeUrl);
+      const resendEmailId = await verstuurOutreachEmail(lead, unsubscribeUrl);
       await updateLead(supabase, lead.id, {
         status: "verzonden",
         verzondenOp: new Date().toISOString(),
+        resendEmailId,
       });
       verzonden++;
     } catch {
