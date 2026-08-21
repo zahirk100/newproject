@@ -58,6 +58,9 @@ export default function LeadsBeheer({ initieleLeads }: { initieleLeads: Lead[] }
   const [goedkeurenBezig, setGoedkeurenBezig] = useState(false);
   const [goedkeurenVoortgang, setGoedkeurenVoortgang] = useState<string | null>(null);
   const [goedkeurenMelding, setGoedkeurenMelding] = useState<string | null>(null);
+  const [testEmail, setTestEmail] = useState("");
+  const [testBezig, setTestBezig] = useState(false);
+  const [testMelding, setTestMelding] = useState<string | null>(null);
 
   const zichtbareLeads = filter === "alle" ? leads : leads.filter((l) => l.status === filter);
   const klaarAantal = leads.filter((l) => l.status === "klaar").length;
@@ -149,6 +152,26 @@ export default function LeadsBeheer({ initieleLeads }: { initieleLeads: Lead[] }
     setGoedkeurenVoortgang(null);
     setGoedkeurenMelding(`${gelukt} van ${teDoen.length} leads klaargezet om te versturen.`);
     setGoedkeurenBezig(false);
+  }
+
+  async function stuurTestmail(event: React.FormEvent) {
+    event.preventDefault();
+    setTestBezig(true);
+    setTestMelding(null);
+    try {
+      const response = await fetch("/api/admin/leads/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: testEmail }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Versturen mislukt");
+      setTestMelding(`Testmail verstuurd naar ${testEmail}.`);
+    } catch (error) {
+      setTestMelding(error instanceof Error ? error.message : "Versturen mislukt");
+    } finally {
+      setTestBezig(false);
+    }
   }
 
   async function genereerConcept(id: string) {
@@ -247,6 +270,32 @@ export default function LeadsBeheer({ initieleLeads }: { initieleLeads: Lead[] }
           )}
         </div>
       </div>
+
+      <form
+        onSubmit={stuurTestmail}
+        className="flex flex-wrap items-end gap-3 rounded-lg border border-black/10 p-4 dark:border-white/10"
+      >
+        <div className="min-w-0 flex-1">
+          <label className="mb-1 block text-xs font-medium text-black/50">
+            Stuur mezelf een testmail
+          </label>
+          <input
+            type="email"
+            value={testEmail}
+            onChange={(e) => setTestEmail(e.target.value)}
+            placeholder="jouw@e-mailadres.nl"
+            className="w-full rounded-md border border-black/15 bg-transparent px-3 py-2 text-sm dark:border-white/20"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={testBezig || !testEmail.trim()}
+          className="rounded-md border border-black/15 px-4 py-2 text-sm font-medium hover:bg-black/5 disabled:opacity-50 dark:border-white/20 dark:hover:bg-white/10"
+        >
+          {testBezig ? "Versturen…" : "Verstuur testmail"}
+        </button>
+        {testMelding && <p className="text-sm text-black/60 dark:text-white/60">{testMelding}</p>}
+      </form>
 
       <form
         onSubmit={zoeken}
