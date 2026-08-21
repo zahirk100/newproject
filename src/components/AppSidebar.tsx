@@ -16,7 +16,10 @@ const LINKS = [
   { href: "/app/instellingen", label: "Instellingen", icon: "⚙️" },
 ];
 
-const ADMIN_LINK = { href: "/app/leads", label: "Leads", icon: "🎯" };
+const ADMIN_LINKS = [
+  { href: "/app/statistieken", label: "Statistieken", icon: "📈" },
+  { href: "/app/leads", label: "Leads", icon: "🎯" },
+];
 
 function Logo({
   bedrijfsnaam,
@@ -60,7 +63,7 @@ function NavLinks({
   isAdmin: boolean;
   onNavigeer?: () => void;
 }) {
-  const links = isAdmin ? [...LINKS, ADMIN_LINK] : LINKS;
+  const links = isAdmin ? [...LINKS, ...ADMIN_LINKS] : LINKS;
   return (
     <nav className="flex-1 space-y-1 px-3 py-4">
       {links.map((link) => {
