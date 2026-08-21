@@ -256,9 +256,12 @@ create table if not exists public.leads_planning (
   actief boolean not null default false,
   dagelijkse_limiet int not null default 25,
   laatst_verzonden_op date,
+  zoek_index int not null default 0,
   updated_at timestamptz not null default now(),
   constraint leads_planning_singleton check (id)
 );
+
+alter table public.leads_planning add column if not exists zoek_index int not null default 0;
 
 insert into public.leads_planning (id) values (true) on conflict (id) do nothing;
 

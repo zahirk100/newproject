@@ -120,6 +120,7 @@ export interface LeadsPlanning {
   actief: boolean;
   dagelijkseLimiet: number;
   laatstVerzondenOp: string | null;
+  zoekIndex: number;
 }
 
 export type FactuurStatus = "open" | "betaald";
