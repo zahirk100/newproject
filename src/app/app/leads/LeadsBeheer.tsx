@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Lead, LeadStatus } from "@/lib/types";
+import { Lead, LeadsPlanning, LeadStatus } from "@/lib/types";
 
 const STATUS_LABEL: Record<LeadStatus, string> = {
   nieuw: "Nieuw",
@@ -41,8 +41,17 @@ const FILTERS: { waarde: LeadStatus | "alle"; label: string }[] = [
   { waarde: "afgemeld", label: "Afgemeld" },
 ];
 
-export default function LeadsBeheer({ initieleLeads }: { initieleLeads: Lead[] }) {
+export default function LeadsBeheer({
+  initieleLeads,
+  initielePlanning,
+}: {
+  initieleLeads: Lead[];
+  initielePlanning: LeadsPlanning;
+}) {
   const [leads, setLeads] = useState(initieleLeads);
+  const [planning, setPlanning] = useState(initielePlanning);
+  const [planningBezig, setPlanningBezig] = useState(false);
+  const [planningMelding, setPlanningMelding] = useState<string | null>(null);
   const [vakgebied, setVakgebied] = useState("");
   const [plaats, setPlaats] = useState("");
   const [zoekBezig, setZoekBezig] = useState(false);
@@ -152,6 +161,25 @@ export default function LeadsBeheer({ initieleLeads }: { initieleLeads: Lead[] }
     setGoedkeurenVoortgang(null);
     setGoedkeurenMelding(`${gelukt} van ${teDoen.length} leads klaargezet om te versturen.`);
     setGoedkeurenBezig(false);
+  }
+
+  async function planningOpslaan(patch: { actief?: boolean; dagelijkseLimiet?: number }) {
+    setPlanningBezig(true);
+    setPlanningMelding(null);
+    try {
+      const response = await fetch("/api/admin/leads/planning", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Opslaan mislukt");
+      setPlanning(data as LeadsPlanning);
+    } catch (error) {
+      setPlanningMelding(error instanceof Error ? error.message : "Opslaan mislukt");
+    } finally {
+      setPlanningBezig(false);
+    }
   }
 
   async function stuurTestmail(event: React.FormEvent) {
@@ -268,6 +296,46 @@ export default function LeadsBeheer({ initieleLeads }: { initieleLeads: Lead[] }
           {batchMelding && (
             <p className="text-sm text-black/60 dark:text-white/60">{batchMelding}</p>
           )}
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-black/10 p-4 dark:border-white/10">
+        <h2 className="mb-1 text-sm font-semibold">Automatisch dagelijks versturen</h2>
+        <p className="mb-3 text-sm text-black/60 dark:text-white/60">
+          Staat dit aan, dan verstuurt het systeem elke dag rond 9:30 automatisch de eerstvolgende
+          klaarstaande leads, zonder dat je hoeft te klikken. Zet het uit om alleen handmatig te
+          versturen.
+        </p>
+        <div className="flex flex-wrap items-center gap-4">
+          <label className="flex items-center gap-2 text-sm font-medium">
+            <input
+              type="checkbox"
+              checked={planning.actief}
+              disabled={planningBezig}
+              onChange={(e) => planningOpslaan({ actief: e.target.checked })}
+              className="h-4 w-4"
+            />
+            Automatisch versturen aan
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            Max. per dag
+            <input
+              type="number"
+              min={1}
+              max={50}
+              value={planning.dagelijkseLimiet}
+              disabled={planningBezig}
+              onChange={(e) => setPlanning((p) => ({ ...p, dagelijkseLimiet: Number(e.target.value) }))}
+              onBlur={(e) => planningOpslaan({ dagelijkseLimiet: Number(e.target.value) })}
+              className="w-20 rounded-md border border-black/15 bg-transparent px-2 py-1 text-sm dark:border-white/20"
+            />
+          </label>
+          {planning.laatstVerzondenOp && (
+            <p className="text-sm text-black/50 dark:text-white/50">
+              Laatst automatisch verzonden op {planning.laatstVerzondenOp}
+            </p>
+          )}
+          {planningMelding && <p className="text-sm text-red-600">{planningMelding}</p>}
         </div>
       </div>
 

@@ -116,6 +116,12 @@ export interface Lead {
   updatedAt: string;
 }
 
+export interface LeadsPlanning {
+  actief: boolean;
+  dagelijkseLimiet: number;
+  laatstVerzondenOp: string | null;
+}
+
 export type FactuurStatus = "open" | "betaald";
 
 export interface Factuur {
