@@ -215,7 +215,7 @@ export function standaardOutreachTekst(lead: Lead, appUrl: string): { onderwerp:
 
 Herkenbaar? Een klant vraagt een prijsopgave, en 's avonds ben je nog bezig met een offerte in Word of Excel in elkaar te zetten.
 
-Met OfferteFlits typ je alleen een korte omschrijving van de klus. Binnen een minuut staat er een compleet offerteconcept klaar, met materiaal- en arbeidsregels. Jij controleert 'm, past aan wat nodig is, en verstuurt.
+Met OfferteFlits deel je een eigen unieke aanvraagpagina met je klanten, bijvoorbeeld op je website of via WhatsApp. De klant omschrijft daar zelf de klus, en die aanvraag verschijnt meteen in jouw dashboard. Met één klik zet je 'm om in een compleet offerteconcept, met materiaal- en arbeidsregels. Jij controleert 'm, past aan wat nodig is, en verstuurt.
 
 Ook wat daarna gebeurt, gaat vanzelf:
 - de klant keurt de offerte online goed, geen gedoe met handtekeningen
