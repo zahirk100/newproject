@@ -1,5 +1,34 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import { VAKGEBIEDEN } from "@/lib/vakgebieden";
+
+const VEELGESTELDE_VRAGEN = [
+  {
+    vraag: "Is OfferteFlits echt gratis?",
+    antwoord:
+      "Ja, alle functies zijn volledig gratis te gebruiken. Geen creditcard nodig en geen verborgen kosten.",
+  },
+  {
+    vraag: "Voor welke vakgebieden is OfferteFlits geschikt?",
+    antwoord:
+      "OfferteFlits is gemaakt voor vakbedrijven zoals loodgieters, elektriciens, aannemers en schilders, maar is te gebruiken door elk vakbedrijf dat offertes maakt.",
+  },
+  {
+    vraag: "Moet mijn klant een account aanmaken?",
+    antwoord:
+      "Nee. De klant vraagt een offerte aan en keurt 'm later goed via een eigen link, zonder in te loggen of een account aan te maken.",
+  },
+  {
+    vraag: "Hoe snel staat een offerte klaar?",
+    antwoord:
+      "Zodra een aanvraag binnenkomt, zet je die met één klik om in een compleet offerteconcept met materiaal- en arbeidsregels. Jij controleert en verstuurt.",
+  },
+  {
+    vraag: "Wat gebeurt er nadat de klant een offerte goedkeurt?",
+    antwoord:
+      "De factuur gaat automatisch naar de klant, en jullie plannen de klus samen in binnen het systeem.",
+  },
+];
 
 const STAPPEN = [
   {
@@ -134,12 +163,26 @@ const JSONLD = {
   },
 };
 
+const FAQ_JSONLD = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: VEELGESTELDE_VRAGEN.map((item) => ({
+    "@type": "Question",
+    name: item.vraag,
+    acceptedAnswer: { "@type": "Answer", text: item.antwoord },
+  })),
+};
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(JSONLD) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSONLD) }}
       />
       <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <Logo />
@@ -241,6 +284,25 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <section className="border-t border-black/10 py-20 dark:border-white/10">
+        <div className="mx-auto max-w-3xl px-6">
+          <h2 className="mb-10 text-center text-2xl font-semibold">Veelgestelde vragen</h2>
+          <div className="space-y-3">
+            {VEELGESTELDE_VRAGEN.map((item) => (
+              <details
+                key={item.vraag}
+                className="group rounded-lg border border-black/10 p-4 dark:border-white/10"
+              >
+                <summary className="cursor-pointer list-none font-medium marker:content-none">
+                  {item.vraag}
+                </summary>
+                <p className="mt-2 text-sm text-black/60 dark:text-white/60">{item.antwoord}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="relative overflow-hidden py-20 text-center">
         <div
           aria-hidden
@@ -261,6 +323,13 @@ export default function LandingPage() {
       </section>
 
       <footer className="border-t border-black/10 py-8 text-center text-sm text-black/40 dark:border-white/10 dark:text-white/40">
+        <div className="mb-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+          {VAKGEBIEDEN.map((v) => (
+            <Link key={v.slug} href={`/voor/${v.slug}`} className="hover:text-black/70 dark:hover:text-white/70">
+              Voor {v.naamMeervoud.toLowerCase()}
+            </Link>
+          ))}
+        </div>
         © {new Date().getFullYear()} OfferteFlits
       </footer>
     </div>

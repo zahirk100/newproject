@@ -18,6 +18,7 @@ function isPubliekPad(pathname: string) {
     return true;
   if (pathname.startsWith("/api/cron/")) return true;
   if (pathname.startsWith("/api/webhooks/")) return true;
+  if (pathname.startsWith("/voor/")) return true;
   return false;
 }
 

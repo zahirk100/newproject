@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { VAKGEBIEDEN } from "@/lib/vakgebieden";
 
 const SITE_URL = "https://offerteflits.online";
 
@@ -10,6 +11,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 1,
     },
+    ...VAKGEBIEDEN.map((v) => ({
+      url: `${SITE_URL}/voor/${v.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
     {
       url: `${SITE_URL}/registreren`,
       lastModified: new Date(),
