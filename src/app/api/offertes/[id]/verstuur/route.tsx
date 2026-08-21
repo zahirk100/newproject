@@ -4,9 +4,10 @@ import { getAuthedContext } from "@/lib/apiAuth";
 import { getInstellingen, getOfferte, updateOfferte } from "@/lib/db";
 import { verstuurOfferteEmail } from "@/lib/email";
 import { OffertePdf } from "@/lib/pdf/OffertePdf";
+import { SITE_URL } from "@/lib/config";
 
 export async function POST(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { supabase, user } = await getAuthedContext();
@@ -23,7 +24,7 @@ export async function POST(
     const pdfBuffer = await renderToBuffer(
       <OffertePdf offerte={offerte} instellingen={instellingen} />
     );
-    const portaalUrl = `${new URL(request.url).origin}/offerte/${offerte.id}`;
+    const portaalUrl = `${SITE_URL}/offerte/${offerte.id}`;
     await verstuurOfferteEmail(offerte, instellingen, pdfBuffer, portaalUrl);
   } catch (error) {
     return NextResponse.json(

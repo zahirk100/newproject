@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthedContext } from "@/lib/apiAuth";
 import { getInstellingen, getOfferte, updateOfferte } from "@/lib/db";
 import { verstuurPlanningVoorstelEmail } from "@/lib/email";
+import { SITE_URL } from "@/lib/config";
 
 // Ondernemer doet een (nieuw) voorstel voor de afspraakdatum.
 export async function POST(
@@ -36,7 +37,7 @@ export async function POST(
   });
 
   const instellingen = await getInstellingen(supabase, user.id);
-  const portaalUrl = `${new URL(request.url).origin}/offerte/${id}`;
+  const portaalUrl = `${SITE_URL}/offerte/${id}`;
   await verstuurPlanningVoorstelEmail(bijgewerkt, instellingen, portaalUrl).catch(() => {});
 
   return NextResponse.json(bijgewerkt);

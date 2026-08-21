@@ -3,6 +3,7 @@ import { getAdminContext } from "@/lib/apiAuth";
 import { deleteLead, getLead, updateLead } from "@/lib/leads";
 import { standaardOutreachTekst } from "@/lib/email";
 import { LeadStatus } from "@/lib/types";
+import { SITE_URL } from "@/lib/config";
 
 export async function PUT(
   request: NextRequest,
@@ -37,7 +38,7 @@ export async function DELETE(
 
 /** Genereert (of hergenereert) de standaard concepttekst voor deze lead. */
 export async function POST(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { supabase, user, admin } = await getAdminContext();
@@ -47,8 +48,7 @@ export async function POST(
   const lead = await getLead(supabase, id);
   if (!lead) return NextResponse.json({ error: "Niet gevonden" }, { status: 404 });
 
-  const appUrl = new URL(request.url).origin;
-  const { onderwerp, tekst } = standaardOutreachTekst(lead, appUrl);
+  const { onderwerp, tekst } = standaardOutreachTekst(lead, SITE_URL);
   const bijgewerkt = await updateLead(supabase, id, {
     emailOnderwerp: onderwerp,
     emailTekst: tekst,

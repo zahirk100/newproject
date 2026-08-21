@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
 import { VAKGEBIEDEN } from "@/lib/vakgebieden";
+import { SITE_URL } from "@/lib/config";
 
 const VEELGESTELDE_VRAGEN = [
   {
@@ -149,7 +150,7 @@ const JSONLD = {
   name: "OfferteFlits",
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
-  url: "https://offerteflits.online",
+  url: SITE_URL,
   description:
     "AI-software waarmee vakbedrijven zoals loodgieters, elektriciens, aannemers en schilders binnen 1 minuut een offerte maken, klanten online laten goedkeuren en facturatie en planning automatiseren.",
   offers: {
