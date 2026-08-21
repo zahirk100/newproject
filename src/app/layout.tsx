@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { SITE_URL } from "@/lib/config";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,7 +14,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const SITE_URL = "https://offerteflits.online";
 const TITEL = "OfferteFlits: offertes maken met AI voor vakbedrijven";
 const BESCHRIJVING =
   "OfferteFlits helpt loodgieters, elektriciens, aannemers en schilders om binnen 1 minuut een professionele offerte te maken met AI. Klanten vragen zelf aan, keuren online goed en de factuur en planning volgen automatisch. Gratis te gebruiken.";

@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { VAKGEBIEDEN } from "@/lib/vakgebieden";
-
-const SITE_URL = "https://offerteflits.online";
+import { SITE_URL } from "@/lib/config";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

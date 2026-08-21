@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Logo from "@/components/Logo";
 import { VAKGEBIEDEN, getVakgebied } from "@/lib/vakgebieden";
+import { SITE_URL } from "@/lib/config";
 
 export function generateStaticParams() {
   return VAKGEBIEDEN.map((v) => ({ vakgebied: v.slug }));
@@ -47,7 +48,7 @@ export default async function VakgebiedPagina({
     name: "OfferteFlits",
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
-    url: `https://offerteflits.online/voor/${info.slug}`,
+    url: `${SITE_URL}/voor/${info.slug}`,
     description: info.metaBeschrijving,
     offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
     audience: { "@type": "Audience", audienceType: info.naamMeervoud },

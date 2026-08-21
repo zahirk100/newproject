@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminContext } from "@/lib/apiAuth";
 import { standaardOutreachTekst, verstuurOutreachEmail } from "@/lib/email";
 import { Lead } from "@/lib/types";
+import { SITE_URL } from "@/lib/config";
 
 export const maxDuration = 30;
 
@@ -20,7 +21,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Vul een e-mailadres in" }, { status: 400 });
   }
 
-  const appUrl = new URL(request.url).origin;
   const nu = new Date().toISOString();
   const testLead: Lead = {
     id: "test",
@@ -42,12 +42,12 @@ export async function POST(request: NextRequest) {
     createdAt: nu,
     updatedAt: nu,
   };
-  const { onderwerp, tekst } = standaardOutreachTekst(testLead, appUrl);
+  const { onderwerp, tekst } = standaardOutreachTekst(testLead, SITE_URL);
   testLead.emailOnderwerp = `[TEST] ${onderwerp}`;
   testLead.emailTekst = tekst;
 
   try {
-    await verstuurOutreachEmail(testLead, `${appUrl}/uitschrijven/test`);
+    await verstuurOutreachEmail(testLead, `${SITE_URL}/uitschrijven/test`);
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Versturen mislukt" },

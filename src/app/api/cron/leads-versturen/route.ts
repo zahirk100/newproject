@@ -4,6 +4,7 @@ import { keurAlleNieuweLeadsGoed, verstuurKlaarstaandeLeads } from "@/lib/leads"
 import { getLeadsPlanning, markeerVandaagVerwerkt } from "@/lib/leadsPlanning";
 import { zoekEnMaakLeads } from "@/lib/leadScraper";
 import { ZOEK_COMBOS } from "@/lib/leadZoekCombos";
+import { SITE_URL } from "@/lib/config";
 
 // 60s is het maximum op het Vercel Hobby-plan.
 export const maxDuration = 60;
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ overgeslagen: true, actief: planning.actief });
   }
 
-  const appUrl = new URL(request.url).origin;
+  const appUrl = SITE_URL;
 
   let nieuweLeadsGevonden = 0;
   for (let i = 0; i < ZOEKEN_PER_DAG; i++) {
