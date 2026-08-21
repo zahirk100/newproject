@@ -55,9 +55,13 @@ export default function LeadsBeheer({ initieleLeads }: { initieleLeads: Lead[] }
   const [batchBezig, setBatchBezig] = useState(false);
   const [batchVoortgang, setBatchVoortgang] = useState<string | null>(null);
   const [batchMelding, setBatchMelding] = useState<string | null>(null);
+  const [goedkeurenBezig, setGoedkeurenBezig] = useState(false);
+  const [goedkeurenVoortgang, setGoedkeurenVoortgang] = useState<string | null>(null);
+  const [goedkeurenMelding, setGoedkeurenMelding] = useState<string | null>(null);
 
   const zichtbareLeads = filter === "alle" ? leads : leads.filter((l) => l.status === filter);
   const klaarAantal = leads.filter((l) => l.status === "klaar").length;
+  const nieuwMetEmailAantal = leads.filter((l) => l.status === "nieuw" && l.email).length;
 
   async function zoeken(event: React.FormEvent) {
     event.preventDefault();
@@ -109,6 +113,42 @@ export default function LeadsBeheer({ initieleLeads }: { initieleLeads: Lead[] }
     setBatchMelding(`Eerste batch klaar: ${totaalNieuw} nieuwe leads gevonden.`);
     setFilter("nieuw");
     setBatchBezig(false);
+  }
+
+  async function alleGoedkeuren() {
+    const teDoen = leads.filter((l) => l.status === "nieuw" && l.email);
+    if (teDoen.length === 0) return;
+    setGoedkeurenBezig(true);
+    setGoedkeurenMelding(null);
+    let gelukt = 0;
+    for (let i = 0; i < teDoen.length; i++) {
+      const lead = teDoen[i];
+      setGoedkeurenVoortgang(`${i + 1}/${teDoen.length}`);
+      try {
+        const genResponse = await fetch(`/api/admin/leads/${lead.id}`, { method: "POST" });
+        if (!genResponse.ok) continue;
+        const gegenereerd = (await genResponse.json()) as Lead;
+        const putResponse = await fetch(`/api/admin/leads/${lead.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            emailOnderwerp: gegenereerd.emailOnderwerp,
+            emailTekst: gegenereerd.emailTekst,
+            status: "klaar",
+          }),
+        });
+        if (putResponse.ok) {
+          const bijgewerkt = await putResponse.json();
+          setLeads((huidig) => huidig.map((l) => (l.id === lead.id ? bijgewerkt : l)));
+          gelukt++;
+        }
+      } catch {
+        // Eén mislukte lead mag de rest niet blokkeren.
+      }
+    }
+    setGoedkeurenVoortgang(null);
+    setGoedkeurenMelding(`${gelukt} van ${teDoen.length} leads klaargezet om te versturen.`);
+    setGoedkeurenBezig(false);
   }
 
   async function genereerConcept(id: string) {
@@ -242,9 +282,24 @@ export default function LeadsBeheer({ initieleLeads }: { initieleLeads: Lead[] }
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-black/10 p-4 dark:border-white/10">
         <p className="text-sm text-black/60 dark:text-white/60">
-          {klaarAantal} lead(s) klaar om te versturen.
+          {nieuwMetEmailAantal} nieuwe lead(s) nog te beoordelen · {klaarAantal} klaar om te
+          versturen.
         </p>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {goedkeurenVoortgang && (
+            <p className="text-sm text-black/60 dark:text-white/60">{goedkeurenVoortgang}</p>
+          )}
+          {goedkeurenMelding && (
+            <p className="text-sm text-black/60 dark:text-white/60">{goedkeurenMelding}</p>
+          )}
+          <button
+            onClick={alleGoedkeuren}
+            disabled={goedkeurenBezig || nieuwMetEmailAantal === 0}
+            className="rounded-md border border-black/15 px-4 py-2 text-sm font-medium hover:bg-black/5 disabled:opacity-50 dark:border-white/20 dark:hover:bg-white/10"
+            title="Past de standaardtekst toe op alle nieuwe leads, zonder individuele review"
+          >
+            {goedkeurenBezig ? "Bezig…" : "Alles goedkeuren"}
+          </button>
           {verstuurMelding && (
             <p className="text-sm text-black/60 dark:text-white/60">{verstuurMelding}</p>
           )}
