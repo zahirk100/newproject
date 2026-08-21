@@ -1,3 +1,7 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { bestaatLeadAl, createLead } from "./leads";
+import { Lead } from "./types";
+
 interface PlaceResultaat {
   placeId: string;
   bedrijfsnaam: string;
@@ -111,4 +115,50 @@ async function haalEmailVanPagina(url: string): Promise<string | null> {
   } catch {
     return null;
   }
+}
+
+/**
+ * Zoekt bedrijven voor één vakgebied+plaats-combinatie en slaat de nieuwe
+ * (nog niet bekende) resultaten op als lead. Gedeeld door de handmatige
+ * zoekknop en de dagelijkse acquisitie-cron.
+ */
+export async function zoekEnMaakLeads(
+  supabase: SupabaseClient,
+  vakgebied: string,
+  plaats: string
+): Promise<{ gevonden: number; nieuw: number; overgeslagen: number; leads: Lead[] }> {
+  const gevonden = await zoekBedrijven(vakgebied, plaats);
+
+  const resultaten = await Promise.all(
+    gevonden
+      .filter((plek) => plek.bedrijfsnaam.trim())
+      .map(async (plek): Promise<Lead | null> => {
+        if (await bestaatLeadAl(supabase, plek.website, plek.bedrijfsnaam, plaats)) {
+          return null;
+        }
+
+        const email = plek.website ? await vindEmailOpWebsite(plek.website) : null;
+
+        return createLead(supabase, {
+          bedrijfsnaam: plek.bedrijfsnaam,
+          vakgebied,
+          plaats,
+          adres: plek.adres,
+          website: plek.website,
+          email,
+          telefoon: plek.telefoon,
+          bron: "google_places",
+          status: email ? "nieuw" : "geen_email",
+        });
+      })
+  );
+
+  const nieuweLeads = resultaten.filter((lead): lead is Lead => lead !== null);
+
+  return {
+    gevonden: gevonden.length,
+    nieuw: nieuweLeads.length,
+    overgeslagen: gevonden.length - nieuweLeads.length,
+    leads: nieuweLeads,
+  };
 }

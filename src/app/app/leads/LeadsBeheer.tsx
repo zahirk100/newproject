@@ -300,11 +300,13 @@ export default function LeadsBeheer({
       </div>
 
       <div className="rounded-lg border border-black/10 p-4 dark:border-white/10">
-        <h2 className="mb-1 text-sm font-semibold">Automatisch dagelijks versturen</h2>
+        <h2 className="mb-1 text-sm font-semibold">Volledig automatische acquisitie</h2>
         <p className="mb-3 text-sm text-black/60 dark:text-white/60">
-          Staat dit aan, dan verstuurt het systeem elke dag rond 9:30 automatisch de eerstvolgende
-          klaarstaande leads, zonder dat je hoeft te klikken. Zet het uit om alleen handmatig te
-          versturen.
+          Staat dit aan, dan doorloopt het systeem elke dag rond 9:30 zelf de hele keten: nieuwe
+          vakbedrijven zoeken (rotatie door vakgebieden en steden), de standaardtekst automatisch
+          toepassen, en de eerstvolgende klaarstaande leads versturen. Er is geen menselijke check
+          meer voordat een mail de deur uitgaat, dus controleer de conceptteksten af en toe
+          steekproefsgewijs. Zet het uit om alleen handmatig te zoeken/keuren/versturen.
         </p>
         <div className="flex flex-wrap items-center gap-4">
           <label className="flex items-center gap-2 text-sm font-medium">
@@ -315,10 +317,10 @@ export default function LeadsBeheer({
               onChange={(e) => planningOpslaan({ actief: e.target.checked })}
               className="h-4 w-4"
             />
-            Automatisch versturen aan
+            Volledig automatisch aan
           </label>
           <label className="flex items-center gap-2 text-sm">
-            Max. per dag
+            Max. verzonden per dag
             <input
               type="number"
               min={1}

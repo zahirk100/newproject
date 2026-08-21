@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { Lead, LeadStatus } from "./types";
-import { verstuurOutreachEmail } from "./email";
+import { standaardOutreachTekst, verstuurOutreachEmail } from "./email";
 
 type Row = Record<string, unknown>;
 
@@ -117,8 +117,37 @@ export async function deleteLead(supabase: SupabaseClient, id: string): Promise<
 }
 
 /**
- * Verstuurt de eerstvolgende `aantal` klaarstaande leads. Gedeeld door de
- * handmatige verstuurknop en de dagelijkse cron, zodat beide dezelfde
+ * Past de standaard concepttekst toe op alle nog niet beoordeelde leads met
+ * bekend e-mailadres en zet ze op 'klaar'. Gedeeld door de "Alles
+ * goedkeuren"-knop en de volledig automatische dagelijkse cron.
+ */
+export async function keurAlleNieuweLeadsGoed(
+  supabase: SupabaseClient,
+  appUrl: string
+): Promise<{ goedgekeurd: number }> {
+  const nieuw = (await listLeads(supabase, "nieuw")).filter((lead) => lead.email);
+
+  let goedgekeurd = 0;
+  for (const lead of nieuw) {
+    const { onderwerp, tekst } = standaardOutreachTekst(lead, appUrl);
+    try {
+      await updateLead(supabase, lead.id, {
+        emailOnderwerp: onderwerp,
+        emailTekst: tekst,
+        status: "klaar",
+      });
+      goedgekeurd++;
+    } catch {
+      // Eén mislukte lead mag de rest niet blokkeren.
+    }
+  }
+  return { goedgekeurd };
+}
+
+/**
+ * Verstuurt de eerstvolgende `aantal` klaarstaande leads, oudste eerst zodat
+ * een groeiende wachtrij niet permanent achteraan blijft staan. Gedeeld door
+ * de handmatige verstuurknop en de dagelijkse cron, zodat beide dezelfde
  * verzendlogica en foutafhandeling gebruiken.
  */
 export async function verstuurKlaarstaandeLeads(
@@ -126,7 +155,14 @@ export async function verstuurKlaarstaandeLeads(
   appUrl: string,
   aantal: number
 ): Promise<{ verzonden: number; mislukt: number; totaal: number }> {
-  const klaarstaand = (await listLeads(supabase, "klaar")).slice(0, aantal);
+  const { data, error } = await supabase
+    .from("leads")
+    .select("*")
+    .eq("status", "klaar")
+    .order("created_at", { ascending: true })
+    .limit(aantal);
+  if (error) throw new Error(`Kon klaarstaande leads niet laden: ${error.message}`);
+  const klaarstaand = (data ?? []).map(rowToLead);
 
   let verzonden = 0;
   let mislukt = 0;
