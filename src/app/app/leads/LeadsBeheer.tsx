@@ -21,6 +21,17 @@ const STATUS_KLASSE: Record<LeadStatus, string> = {
   bounced: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
 };
 
+const EERSTE_BATCH: { vakgebied: string; plaats: string }[] = [
+  { vakgebied: "loodgieter", plaats: "Utrecht" },
+  { vakgebied: "loodgieter", plaats: "Amersfoort" },
+  { vakgebied: "loodgieter", plaats: "Almere" },
+  { vakgebied: "loodgieter", plaats: "Zwolle" },
+  { vakgebied: "elektricien", plaats: "Utrecht" },
+  { vakgebied: "elektricien", plaats: "Amersfoort" },
+  { vakgebied: "elektricien", plaats: "Almere" },
+  { vakgebied: "elektricien", plaats: "Zwolle" },
+];
+
 const FILTERS: { waarde: LeadStatus | "alle"; label: string }[] = [
   { waarde: "alle", label: "Alle" },
   { waarde: "nieuw", label: "Nieuw" },
@@ -41,6 +52,9 @@ export default function LeadsBeheer({ initieleLeads }: { initieleLeads: Lead[] }
   const [bezigId, setBezigId] = useState<string | null>(null);
   const [verstuurMelding, setVerstuurMelding] = useState<string | null>(null);
   const [verstuurBezig, setVerstuurBezig] = useState(false);
+  const [batchBezig, setBatchBezig] = useState(false);
+  const [batchVoortgang, setBatchVoortgang] = useState<string | null>(null);
+  const [batchMelding, setBatchMelding] = useState<string | null>(null);
 
   const zichtbareLeads = filter === "alle" ? leads : leads.filter((l) => l.status === filter);
   const klaarAantal = leads.filter((l) => l.status === "klaar").length;
@@ -67,6 +81,34 @@ export default function LeadsBeheer({ initieleLeads }: { initieleLeads: Lead[] }
     } finally {
       setZoekBezig(false);
     }
+  }
+
+  async function startEersteBatch() {
+    setBatchBezig(true);
+    setBatchMelding(null);
+    let totaalNieuw = 0;
+    for (let i = 0; i < EERSTE_BATCH.length; i++) {
+      const combo = EERSTE_BATCH[i];
+      setBatchVoortgang(`${i + 1}/${EERSTE_BATCH.length}: ${combo.vakgebied} in ${combo.plaats}…`);
+      try {
+        const response = await fetch("/api/admin/leads/scrape", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(combo),
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setLeads((huidig) => [...(data.leads as Lead[]), ...huidig]);
+          totaalNieuw += data.nieuw as number;
+        }
+      } catch {
+        // Eén mislukte combinatie mag de rest van de batch niet blokkeren.
+      }
+    }
+    setBatchVoortgang(null);
+    setBatchMelding(`Eerste batch klaar: ${totaalNieuw} nieuwe leads gevonden.`);
+    setFilter("nieuw");
+    setBatchBezig(false);
   }
 
   async function genereerConcept(id: string) {
@@ -143,6 +185,29 @@ export default function LeadsBeheer({ initieleLeads }: { initieleLeads: Lead[] }
 
   return (
     <div className="space-y-8">
+      <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-900 dark:bg-blue-950/20">
+        <h2 className="mb-1 text-sm font-semibold">Eerste batch</h2>
+        <p className="mb-3 text-sm text-black/60 dark:text-white/60">
+          Loodgieters en elektriciens in Utrecht, Amersfoort, Almere en Zwolle (8 zoekopdrachten,
+          tot ongeveer 80 leads).
+        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={startEersteBatch}
+            disabled={batchBezig}
+            className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-white/80"
+          >
+            {batchBezig ? "Bezig…" : "Start eerste batch"}
+          </button>
+          {batchVoortgang && (
+            <p className="text-sm text-black/60 dark:text-white/60">{batchVoortgang}</p>
+          )}
+          {batchMelding && (
+            <p className="text-sm text-black/60 dark:text-white/60">{batchMelding}</p>
+          )}
+        </div>
+      </div>
+
       <form
         onSubmit={zoeken}
         className="flex flex-wrap items-end gap-3 rounded-lg border border-black/10 p-4 dark:border-white/10"
